@@ -729,6 +729,10 @@ async function buyToken(projectAddr, baseTokenAddr) {
   if (!userAddress && signer) {
     try {
       userAddress = await signer.getAddress();
+      window.userAddress = userAddress;
+      if (window.WalletState) {
+        window.WalletState.userAddress = userAddress;
+      }
     } catch (e) {
       console.error("Addr fetch failed", e);
     }
@@ -900,7 +904,8 @@ async function buyToken(projectAddr, baseTokenAddr) {
 
     // ── KOL Referral Tracking ──
     if (typeof window.trackKolPurchase === 'function') {
-        window.trackKolPurchase(receipt.transactionHash, window.WalletState.userAddress);
+        const kolUserAddress = userAddress || window.userAddress || (window.WalletState && window.WalletState.userAddress);
+        window.trackKolPurchase(receipt.transactionHash, kolUserAddress);
     }
 
     // Redirect to Dividends correctly without reloading Launchpad

@@ -355,6 +355,7 @@ async function connectSpecificProvider(selectedProvider) {
 
     userAddress = accounts[0];
     window.userAddress = userAddress;
+    window.WalletState.userAddress = userAddress;
 
     // 2. Initialize Ethers Provider (Any Network Context)
     // We intentionally SKIP proactive network switching here because it breaks
@@ -414,6 +415,7 @@ async function connectSpecificProvider(selectedProvider) {
 function disconnectWallet() {
   userAddress = null;
   window.userAddress = null;
+  window.WalletState.userAddress = null;
   provider = null;
   window.provider = null;
   signer = null;
@@ -585,6 +587,7 @@ window.addEventListener("load", async () => {
         if (accounts.length > 0) {
           userAddress = accounts[0];
           window.userAddress = userAddress;
+          window.WalletState.userAddress = userAddress;
           provider = new ethers.providers.Web3Provider(window.ethereum, "any");
           window.provider = provider;
           signer = provider.getSigner();

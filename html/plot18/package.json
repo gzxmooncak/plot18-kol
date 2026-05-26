@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "test:config": "node tests/config-environments.test.cjs",
+    "test:tracker": "node tests/tracker-diagnostics.test.cjs",
+    "test:kol-address": "node tests/kol-address-state.test.cjs"
+  },
   "dependencies": {
     "dotenv": "^17.3.1",
     "element-ui": "^2.15.14",
