@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理控制台 | plot 18</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="https://plot18.com/plot18.ico" type="image/x-icon">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="../js/toast.js"></script>
+    <!-- KOL Tracking Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="../js/tracker.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/abis.js"></script>
+    <script src="../js/ui_components.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/web3_integration.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bullish-green': '#00FF41',
+                        'desire-pink': '#FF00FF',
+                        'pure-black': '#000000',
+                        'dark-gray': '#111111',
+                    },
+                    fontFamily: {
+                        'impact': ['Anton', 'sans-serif'],
+                        'terminal': ['JetBrains Mono', 'monospace'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #e5e5e5;
+            cursor: default;
+        }
+
+        /* Scanline Overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .cyber-panel {
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid #333;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #FF0000;
+            border-left: 2px solid #FF0000;
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #FF0000;
+            border-right: 2px solid #FF0000;
+        }
+
+        .btn-standard {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            border-radius: 4px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        /* Modal Active States */
+        #walletSelectModal.active #walletModalContent,
+        #walletDownloadModal.active #walletDownloadContent {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-body bg-black text-gray-300 selection:bg-red-500 selection:text-black">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 border-b border-red-900 bg-black/90 backdrop-blur-md">
+        <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="../index.html" class="flex items-center gap-2 group">
+                <i class="fa-solid fa-shield-cat text-red-500 text-xl"></i>
+                <span class="font-impact text-2xl tracking-wider text-white">PLOT<span
+                        class="text-red-500">18</span></span>
+                <span
+                    class="font-mono text-[10px] text-red-500 mt-1 ml-2 font-bold uppercase tracking-widest px-2 py-0.5 border border-red-500 bg-red-900/20">ADMIN_MODE</span>
+            </a>
+
+            <div class="flex items-center gap-4">
+                <!-- Block Height Display -->
+                <div id="blockHeightDisplay"
+                    class="hidden md:flex items-center gap-2 font-terminal text-[10px] text-gray-500 border border-gray-800 px-3 py-2 bg-black/50 mr-4">
+                    <span class="text-bullish-green animate-pulse">●</span> 区块高度: <span id="currentBlockNum"
+                        class="text-white">...</span>
+                </div>
+
+                <button id="connectWalletBtn" onclick="openWalletModal()"
+                    class="font-terminal text-xs border border-red-500 text-red-500 px-4 py-2 hover:bg-red-500 hover:text-black transition-colors uppercase">
+                    [ 连接钱包 ]
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-24 pb-20 px-6 max-w-[1400px] mx-auto w-full">
+
+        <div class="flex justify-between items-end mb-8 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="font-impact text-4xl text-white uppercase tracking-wide">项目管理 (PROJECTS)</h1>
+                <p class="font-terminal text-xs text-gray-500 mt-2">管理项目部署、熔断机制及核心参数配置。</p>
+            </div>
+            <button onclick="loadAdminProjects()"
+                class="text-xs font-terminal text-bullish-green hover:text-white pb-1 border-b border-bullish-green hover:border-white transition-colors">
+                <i class="fa-solid fa-rotate mr-1"></i> 刷新列表
+            </button>
+        </div>
+
+        <!-- System Stats Grid (Updated to 4 cols) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- Global Dashboard (New) -->
+            <div class="cyber-panel p-6 bg-black/50 border-bullish-green/30">
+                <div class="text-xs font-terminal text-gray-500 uppercase mb-2">估算总募资 (USDT)</div>
+                <div id="admin-global-dashboard-value" class="font-impact text-2xl text-bullish-green tracking-widest">$0.00</div>
+            </div>
+
+            <div class="cyber-panel p-6 bg-black/50">
+                <div class="text-xs font-terminal text-gray-500 uppercase mb-2">累计项目数</div>
+                <div id="admin-total-projects" class="font-impact text-2xl text-white">--</div>
+            </div>
+
+            <div class="cyber-panel p-6 bg-black/50">
+                <div class="text-xs font-terminal text-gray-500 uppercase mb-2">工厂合约地址</div>
+                <div id="admin-factory-addr" class="font-mono text-sm text-white truncate opacity-70">Loading...</div>
+            </div>
+
+            <div class="cyber-panel p-6 bg-black/50">
+                <div class="text-xs font-terminal text-gray-500 uppercase mb-2">当前管理员</div>
+                <div id="admin-user-addr" class="font-mono text-sm text-white truncate text-red-400">未连接</div>
+            </div>
+        </div>
+
+        <!-- Platform Settings Link -->
+        <div class="mb-12">
+            <div class="cyber-panel p-6 border border-blue-900 bg-blue-900/5 flex items-center justify-between">
+                <div>
+                    <h3 class="font-impact text-2xl text-white uppercase"><i
+                            class="fa-solid fa-server mr-2 text-blue-500"></i> 平台管理</h3>
+                    <p class="text-xs font-terminal text-gray-500 mt-1">发布新项目或管理白名单 (Deploy & Whitelist)。</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.location.href='create.html'"
+                        class="btn-standard bg-bullish-green text-black hover:bg-white px-6 py-3 font-bold border border-green-500 shadow-[0_0_15px_rgba(0,255,65,0.3)]">
+                        <i class="fa-solid fa-plus mr-2"></i> 创建新项目
+                    </button>
+                    <!-- Settings Button: Hidden by default, shown if Owner -->
+                    <button id="btn-platform-settings" onclick="window.location.href='/admin/platform.html'"
+                        class="hidden btn-standard bg-blue-900 text-white hover:bg-white hover:text-blue-900 px-6 py-3 border border-blue-500 shadow-[0_0_15px_rgba(0,100,255,0.3)] hover:shadow-[0_0_25px_rgba(0,100,255,0.6)]">
+                        <i class="fa-solid fa-sliders mr-2"></i> 打开设置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects List (Vertical Stack for Horizontal Cards) -->
+        <div id="admin-project-cards" class="flex flex-col gap-6">
+            <div class="col-span-full text-center py-20 text-gray-500 font-terminal animate-pulse">
+                INITIALIZING BLOCKCHAIN LINK...
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // Init Admin List
+        window.addEventListener('load', async () => {
+            // Wait for Web3 Init
+            setTimeout(() => {
+                if (typeof loadAdminProjects === 'function') {
+                    loadAdminProjects();
+                } else {
+                    console.error("loadAdminProjects not found");
+                }
+                if (typeof loadPlatformSettings === 'function') {
+                    loadPlatformSettings();
+                }
+            }, 1000);
+        });
+    </script>
+    <!-- Wallet Selection Modal -->
+    <div id="walletSelectModal" class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeWalletModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletModalContent">
+            <!-- Close Button -->
+            <button onclick="closeWalletModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-impact tracking-widest text-white mb-2 text-center">CONNECT <span class="text-bullish-green">WALLET</span></h3>
+            <p class="text-xs text-gray-400 font-terminal text-center mb-6">SELECT YOUR PROVIDER TO INITIATE UPLINK</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <button onclick="handleWalletSelection('metamask')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" class="w-8 h-8">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">MetaMask</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- OKX Wallet -->
+                <button onclick="handleWalletSelection('okx')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-black rounded-full border border-white flex items-center justify-center">
+                                <span class="text-white font-bold text-xs">OKX</span>
+                            </div>
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">OKX Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Coinbase Wallet -->
+                <button onclick="handleWalletSelection('coinbase')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-xs">CB</span>
+                            </div>
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Coinbase Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+                <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                   <span class="text-[10px] text-gray-600 font-terminal block">// SECURE PROTOCOL V1.0 //</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div id="walletDownloadModal" class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeDownloadModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletDownloadContent">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"></i>
+                <h3 class="text-2xl font-impact tracking-widest text-white mb-2">APP NOT <span class="text-desire-pink">FOUND</span></h3>
+                <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">It looks like you don't have this Wallet App installed on your device.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="downloadModalBtn" href="#" target="_blank" class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button">
+                    DOWNLOAD APP
+                </a>
+                <button onclick="closeDownloadModal(); openWalletModal();" class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors">
+                    CHOOSE ANOTHER WALLET
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

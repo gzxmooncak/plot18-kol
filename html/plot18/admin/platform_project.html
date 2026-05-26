@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台方项目管控 | plot 18</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="https://plot18.com/plot18.ico" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/abis.js"></script>
+    <script src="../js/ui_components.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/web3_integration.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'bullish-green': '#00FF41', 'desire-pink': '#FF00FF', 'pure-black': '#000000', 'dark-gray': '#111111', },
+                    fontFamily: { 'impact': ['Anton', 'sans-serif'], 'terminal': ['JetBrains Mono', 'monospace'], 'body': ['Inter', 'sans-serif'], },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000;
+            color: #e5e5e5;
+            cursor: default;
+        }
+
+        .cyber-panel {
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid #333;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-standard {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        /* Modal Active States */
+        #walletSelectModal.active #walletModalContent,
+        #walletDownloadModal.active #walletDownloadContent {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-body bg-black text-gray-300">
+
+    <nav class="fixed top-0 w-full z-50 border-b border-blue-900 bg-black/90 backdrop-blur-md">
+        <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <i class="fa-solid fa-shield-halved text-blue-500 text-xl"></i>
+                <span class="font-impact text-2xl tracking-wider text-white">PLOT<span
+                        class="text-blue-500">18</span></span>
+                <span class="font-mono text-[10px] text-gray-400 mt-1 ml-2">/ PLATFORM / PROJECT_CONTROL</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <div
+                    class="hidden md:flex items-center gap-2 font-terminal text-[10px] text-gray-500 border border-gray-800 px-3 py-2 bg-black/50 mr-4">
+                    <span class="text-bullish-green animate-pulse">●</span> 区块: <span id="currentBlockNum"
+                        class="text-white">...</span>
+                </div>
+                <button id="connectWalletBtn" onclick="openWalletModal()"
+                    class="font-terminal text-xs border border-blue-500 text-blue-500 px-4 py-2 hover:bg-blue-500 hover:text-black transition-colors uppercase">[
+                    连接钱包 ]</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-24 pb-20 px-6 max-w-[800px] mx-auto w-full">
+        <a href="index.html"
+            class="inline-flex items-center text-gray-500 hover:text-white mb-8 font-terminal text-xs transition-colors group">
+            <i class="fa-solid fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i> 返回控制台 (BACK TO DASHBOARD)
+        </a>
+
+        <!-- Header Info -->
+        <div class="flex items-start gap-6 cyber-panel p-6 mb-8 border-blue-900 bg-blue-900/10">
+            <img id="project-img" src="" class="w-24 h-24 object-cover border border-blue-500/30">
+            <div>
+                <h1 id="project-title" class="text-3xl font-impact text-white mb-2 uppercase">LOADING...</h1>
+                <div id="project-addr" class="font-mono text-xs text-blue-400 mb-2">0x...</div>
+                <div
+                    class="inline-block px-2 py-1 bg-black border border-gray-700 text-[10px] font-terminal uppercase text-white">
+                    状态: <span id="status-text" class="text-bullish-green font-bold">...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8">
+
+            <!-- Risk Control -->
+            <div class="cyber-panel p-6 border-red-900/50">
+                <h2 class="font-impact text-xl text-red-500 mb-4 uppercase flex items-center">
+                    <i class="fa-solid fa-triangle-exclamation mr-2"></i> 风险管控 (RISK CONTROL)
+                </h2>
+                <p class="text-[10px] text-gray-500 mb-6 font-mono">
+                    平台管理员的紧急控制权限。用于拦截恶意项目或恢复被误封的项目。
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="factoryAction_BlockProject()"
+                        class="btn-standard bg-red-900 text-white hover:bg-red-700 py-4 font-bold border border-red-500">
+                        <i class="fa-solid fa-ban mr-2"></i> 强制封禁 (BLOCK)
+                    </button>
+                    <button onclick="factoryAction_RecoverProject()"
+                        class="btn-standard bg-green-900 text-white hover:bg-green-700 py-4 font-bold border border-green-500">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> 解除封禁 (RECOVER)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Economic Control -->
+            <div class="cyber-panel p-6 border-blue-900/50">
+                <h2 class="font-impact text-xl text-blue-500 mb-4 uppercase flex items-center">
+                    <i class="fa-solid fa-money-bill-trend-up mr-2"></i> 经济模型强制覆写 (OVERRIDE)
+                </h2>
+                <div class="flex items-end gap-4">
+                    <div class="flex-grow">
+                        <label class="block text-[10px] text-blue-300 mb-1 font-terminal">兑换比率 (1 BASE = X TKN)</label>
+                        <div class="flex items-center bg-black border border-blue-900 p-3">
+                            <span class="text-gray-500 text-xs mr-2">当前: <span id="curr-rate">...</span> →
+                                新值:</span>
+                            <input type="number" id="new-rate"
+                                class="bg-transparent text-white font-mono text-lg outline-none w-full" placeholder="0">
+                        </div>
+                    </div>
+                    <button onclick="factoryAction_UpdateRate()"
+                        class="btn-standard bg-blue-600 text-black hover:bg-white hover:text-blue-900 h-12 px-6 font-bold shadow-[0_0_10px_rgba(0,100,255,0.3)]">
+                        强制更新 (FORCE UPDATE)
+                    </button>
+                </div>
+                <p class="text-[9px] text-gray-500 mt-2 italic">* 注意：此操作将覆盖项目方设定的任何汇率。</p>
+            </div>
+
+        </div>
+
+    </main>
+    <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        window.addEventListener('load', () => {
+            // Start Block Watcher
+            if (typeof startBlockWatcher === 'function') startBlockWatcher();
+
+            // Init Data
+            setTimeout(() => {
+                if (loadPlatformProjectDetails) loadPlatformProjectDetails();
+            }, 1000);
+        });
+    </script>
+    <!-- Wallet Selection Modal -->
+    <div id="walletSelectModal" class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeWalletModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletModalContent">
+            <!-- Close Button -->
+            <button onclick="closeWalletModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-impact tracking-widest text-white mb-2 text-center">CONNECT <span class="text-bullish-green">WALLET</span></h3>
+            <p class="text-xs text-gray-400 font-terminal text-center mb-6">SELECT YOUR PROVIDER TO INITIATE UPLINK</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <button onclick="handleWalletSelection('metamask')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" class="w-8 h-8">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">MetaMask</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- OKX Wallet -->
+                <button onclick="handleWalletSelection('okx')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-black rounded-full border border-white flex items-center justify-center">
+                                <span class="text-white font-bold text-xs">OKX</span>
+                            </div>
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">OKX Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Coinbase Wallet -->
+                <button onclick="handleWalletSelection('coinbase')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-xs">CB</span>
+                            </div>
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Coinbase Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+                <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                   <span class="text-[10px] text-gray-600 font-terminal block">// SECURE PROTOCOL V1.0 //</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div id="walletDownloadModal" class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeDownloadModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletDownloadContent">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"></i>
+                <h3 class="text-2xl font-impact tracking-widest text-white mb-2">APP NOT <span class="text-desire-pink">FOUND</span></h3>
+                <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">It looks like you don't have this Wallet App installed on your device.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="downloadModalBtn" href="#" target="_blank" class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button">
+                    DOWNLOAD APP
+                </a>
+                <button onclick="closeDownloadModal(); openWalletModal();" class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors">
+                    CHOOSE ANOTHER WALLET
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

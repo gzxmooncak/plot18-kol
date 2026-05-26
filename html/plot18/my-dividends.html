@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Center | Plot18</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="shortcut icon" href="plot18.ico" type="image/x-icon">
+
+    <!-- Ethers & Integration -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="js/tracker.js"></script>
+    <script src="js/toast.js"></script>
+    <!-- KOL Tracking Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="js/tracker.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/abis.js"></script>
+    <script src="js/ui_components.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/web3_integration.js"></script>
+
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bullish-green': '#00FF41',    /* Hacker/Crypto Up Green */
+                        'desire-pink': '#FF00FF',      /* Cyber/Neon Pink */
+                        'pure-black': '#000000',       /* OLED Black */
+                        'dark-gray': '#111111',        /* Panel BG */
+                        'grid-line': '#222222',        /* Grid Lines */
+                        'vision-blue': '#4F46E5',      /* Vision Section Accent */
+                    },
+                    fontFamily: {
+                        'impact': ['Anton', 'sans-serif'],
+                        'terminal': ['JetBrains Mono', 'monospace'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'ticker': 'ticker 20s linear infinite',
+                        'glitch': 'glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite',
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'gradient-x': 'gradientX 5s ease infinite',
+                        'bg-pulse': 'bgPulse 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        ticker: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-100%)' }
+                        },
+                        glitch: {
+                            '0%': { transform: 'translate(0)' },
+                            '20%': { transform: 'translate(-2px, 2px)' },
+                            '40%': { transform: 'translate(-2px, -2px)' },
+                            '60%': { transform: 'translate(2px, 2px)' },
+                            '80%': { transform: 'translate(2px, -2px)' },
+                            '100%': { transform: 'translate(0)' }
+                        },
+                        scanline: {
+                            '0%': { top: '-100%' },
+                            '100%': { top: '200%' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 10px rgba(79, 70, 229, 0.5)' },
+                            '100%': { boxShadow: '0 0 25px rgba(79, 70, 229, 0.8), 0 0 10px rgba(0, 255, 65, 0.3)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        gradientX: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' }
+                        },
+                        bgPulse: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.7' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --mobile-bottom-nav-height: calc(68px + env(safe-area-inset-bottom, 0px));
+        }
+        body {
+            background-color: #000000;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+            border-left: 1px solid #222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border: 1px solid #00FF41;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00FF41;
+        }
+
+        /* 1. Global CRT Scanline & Noise */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .cyber-panel {
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid #333;
+            position: relative;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #00FF41;
+            border-left: 2px solid #00FF41;
+            transition: all 0.3s;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #00FF41;
+            border-right: 2px solid #00FF41;
+            transition: all 0.3s;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel:hover {
+            border-color: #00FF41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+        }
+
+        .cyber-border-l {
+            border-left: 4px solid #00FF41;
+        }
+
+        .cyber-gradient-text {
+            background: linear-gradient(90deg, #00FF41, #FF00FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Vision Text Glow */
+        .vision-text-glow {
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+        }
+
+        /* Ticker Tape */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #00FF41;
+            border-bottom: 2px solid #000;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: ticker 40s linear infinite;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 4rem;
+            color: #000;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Glitch Buttons */
+        .btn-claim {
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            background-color: #00FF41;
+            color: #000;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            position: relative;
+            cursor: pointer;
+            letter-spacing: 1px;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-claim:hover:not(:disabled) {
+            background-color: #fff;
+            box-shadow: 0 0 20px #00FF41;
+            transform: translateY(-2px);
+        }
+
+        .btn-claim:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Active Nav Link Highlight */
+        .nav-link.active,
+        .nav-link-mobile.active {
+            color: #00FF41;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+        }
+
+        @media (min-width: 768px) {
+            .nav-link.active {
+                border-bottom: 2px solid #00FF41;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .nav-link-mobile.active {
+                border-left: 3px solid #00FF41;
+                background: rgba(0, 255, 65, 0.05);
+            }
+        }
+
+        /* Modal Active States */
+        #walletSelectModal.active #walletModalContent,
+        #walletDownloadModal.active #walletDownloadContent,
+        #importTokenModal.active #importTokenContent {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+            pointer-events: auto !important;
+        }
+
+        /* Mobile Menu */
+        #mobile-menu {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+            position: absolute;
+            width: 100%;
+            z-index: 45;
+            top: 100%;
+        }
+
+        #mobile-menu.hidden {
+            display: none;
+        }
+
+        /* Side Navigation */
+        .side-nav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 50;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 1px solid #333;
+            backdrop-filter: blur(10px);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .side-nav-item {
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .side-nav-item:hover {
+            color: #00FF41;
+            transform: translateX(-5px);
+        }
+
+        .side-nav-item i {
+            font-size: 1.25rem;
+        }
+
+        /* Tooltip for side nav */
+        .side-nav-item::before {
+            content: attr(data-label);
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            background: #000;
+            border: 1px solid #00FF41;
+            color: #00FF41;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+
+        .side-nav-item:hover::before {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+    </style>
+</head>
+
+<body class="font-body antialiased min-h-screen pb-[var(--mobile-bottom-nav-height)] md:pb-0">
+    <!-- Side Navigation -->
+    <div class="side-nav hidden md:flex">
+        <a href="index.html#flagship" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="HOME"><i class="fa-solid fa-house"></i></a>
+        <a href="index.html#hero" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="GENESIS"><i class="fa-solid fa-dog"></i></a>
+        <a href="index.html#tokenomics" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="TOKENOMICS"><i class="fa-solid fa-coins"></i></a>
+        <a href="index.html#assets" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="MUSES"><i class="fa-solid fa-users-viewfinder"></i></a>
+        <a href="index.html#team" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="TEAM"><i class="fa-solid fa-people-group"></i></a>
+        <a href="index.html#faq" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="FAQ"><i class="fa-solid fa-circle-question"></i></a>
+        <a href="https://t.me/plot18app" target="_blank" class="side-nav-item !text-[#0088cc]" data-label="OFFICIAL" title="Official Account" style="text-shadow: 0 0 10px rgba(0,136,204,0.8);"><i class="fa-brands fa-telegram"></i></a>
+        <a href="https://t.me/plot18_com" target="_blank" class="side-nav-item !text-bullish-green" data-label="SUPPORT" title="Support & Service" style="text-shadow: 0 0 10px rgba(0,255,65,0.8);"><i class="fa-brands fa-telegram"></i></a>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- Ticker Tape -->
+    <div class="fixed top-0 w-full z-50 ticker-wrap shadow-[0_0_20px_rgba(0,255,65,0.4)]">
+        <div class="ticker">
+            <div class="ticker-item">// THE FUTURE OF CINEMA IS DECENTRALIZED //</div>
+            <div class="ticker-item">AESTHETIC PROTOCOL ONLINE</div>
+            <div class="ticker-item">NEURAL LINK <i class="fa-solid fa-wifi"></i> STABLE</div>
+            <div class="ticker-item">CYBERPUNK VISIONS <i class="fa-solid fa-eye"></i> LOADED</div>
+            <div class="ticker-item">MUSE FREQUENCY <i class="fa-solid fa-bolt"></i> OPTIMAL</div>
+            <div class="ticker-item">RWA YIELD GENERATION: ACTIVE</div>
+            <div class="ticker-item">NEW SYNTHETIC ASSETS MINTING...</div>
+            <div class="ticker-item">ENTER THE PLOT18 METAVERSE</div>
+            <!-- Duplicate for seamless loop -->
+            <div class="ticker-item">// THE FUTURE OF CINEMA IS DECENTRALIZED //</div>
+            <div class="ticker-item">AESTHETIC PROTOCOL ONLINE</div>
+            <div class="ticker-item">NEURAL LINK <i class="fa-solid fa-wifi"></i> STABLE</div>
+            <div class="ticker-item">CYBERPUNK VISIONS <i class="fa-solid fa-eye"></i> LOADED</div>
+            <div class="ticker-item">MUSE FREQUENCY <i class="fa-solid fa-bolt"></i> OPTIMAL</div>
+            <div class="ticker-item">RWA YIELD GENERATION: ACTIVE</div>
+            <div class="ticker-item">NEW SYNTHETIC ASSETS MINTING...</div>
+            <div class="ticker-item">ENTER THE PLOT18 METAVERSE</div>
+        </div>
+    </div>
+
+    <nav class="fixed top-8 w-full z-40 bg-black/80 border-b border-gray-800 backdrop-blur-md transition-all duration-300"
+        id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0 flex items-center gap-3 group cursor-pointer" onclick="window.location.href='index.html'">
+                    <div
+                        class="w-1.5 h-8 bg-bullish-green group-hover:bg-desire-pink transition-colors shadow-[0_0_10px_#00FF41] group-hover:shadow-[0_0_10px_#FF00FF]">
+                    </div>
+                    <span class="text-white text-3xl font-impact tracking-widest vision-text-glow uppercase">plot 18</span>
+                </div>
+
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8">
+                        <a href="index.html#flagship" class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">HOME</a>
+                        <a href="index.html#hero" class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">GENESIS</a>
+                        <a href="index.html#tokenomics" class="nav-link text-gray-400 hover:text-bullish-green font-terminal text-sm font-bold transition-colors">TOKENOMICS</a>
+                        <a href="index.html#assets" class="nav-link text-gray-400 hover:text-desire-pink font-terminal text-sm font-bold transition-colors">MUSE_ASSETS</a>
+                        <a href="index.html#team" class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">TEAM</a>
+                        <a href="index.html#faq" class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">FAQ</a>
+                        <a href="invest.html" class="nav-link text-bullish-green hover:text-white font-terminal text-sm font-bold transition-colors border border-bullish-green/30 px-3 py-1 rounded bg-bullish-green/10 hover:bg-bullish-green/20">LAUNCHPAD</a>
+                        <a href="my-dividends.html" class="nav-link active text-bullish-green font-terminal text-sm font-bold transition-colors">DIVIDENDS</a>
+                        <a href="whitepaper.html" class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">WHITEPAPER</a>
+
+                        <!-- Block Height Display -->
+                        <div id="blockHeightDisplay"
+                            class="hidden md:flex items-center gap-2 font-terminal text-[10px] text-gray-500 border border-gray-800 px-3 py-2 bg-black/50 mr-4">
+                            <span class="text-bullish-green animate-pulse">●</span> BLOCK: <span id="currentBlockNum"
+                                class="text-white">...</span>
+                        </div>
+                        
+                        <!-- Consolidated Web3 Button -->
+                        <div class="flex items-center gap-2">
+                            <button id="connectWalletBtn" onclick="openWalletModal()"
+                                class="text-bullish-green border border-bullish-green hover:bg-bullish-green hover:text-black px-6 py-2 font-terminal text-xs font-bold transition-all shadow-[0_0_10px_rgba(0,255,65,0.2)] hover:shadow-[0_0_20px_rgba(0,255,65,0.6)] rounded-sm whitespace-nowrap min-w-[160px] flex items-center justify-center">
+                                [ Connect_Wallet ]
+                            </button>
+                            <button id="disconnectBtn" onclick="disconnectWallet()"
+                                class="hidden text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white px-3 py-2 font-terminal text-xs font-bold transition-all rounded-sm">
+                                <i class="fa-solid fa-power-off"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:hidden flex items-center gap-3">
+                    <!-- Connect Wallet button for mobile top bar (matches PC style) -->
+                    <button id="connectWalletBtnMobileNav" onclick="openWalletModal()"
+                        class="text-bullish-green border border-bullish-green px-4 h-9 flex items-center justify-center rounded-sm transition-all hover:bg-bullish-green hover:text-black font-terminal text-xs font-bold whitespace-nowrap tracking-wider">
+                        [ Connect_Wallet ]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-black/95 backdrop-blur-xl border-t border-bullish-green/30" style="padding-bottom: env(safe-area-inset-bottom);">
+        <div class="flex justify-around items-center h-[68px] px-2 font-terminal">
+            <a href="index.html#flagship" class="flex flex-col items-center justify-center w-1/4 h-full text-gray-400 hover:text-white transition-colors nav-link-mobile" data-target="flagship">
+                <i class="fa-solid fa-house text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">HOME</span>
+            </a>
+            <a href="invest.html" class="flex flex-col items-center justify-center w-1/4 h-full text-desire-pink hover:text-white transition-colors relative animate-pulse shadow-[0_0_15px_rgba(255,0,255,0.3)]">
+                <i class="fa-solid fa-rocket text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">LAUNCH</span>
+            </a>
+            <a href="my-dividends.html" class="flex flex-col items-center justify-center w-1/4 h-full text-bullish-green hover:text-white transition-colors">
+                <i class="fa-solid fa-gem text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">REWARDS</span>
+            </a>
+            <div class="relative flex flex-col items-center justify-center w-1/4 h-full text-gray-400 hover:text-white transition-colors cursor-pointer" onclick="toggleMobileDocsMenu(event)">
+                <i class="fa-solid fa-book-open text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">DOCS</span>
+                
+                <!-- Micro Popup Menu for Docs -->
+                <div id="mobileDocsMenu" class="absolute bottom-[80px] right-2 w-48 bg-black/95 border border-bullish-green/30 rounded-md shadow-[0_0_20px_rgba(0,255,65,0.15)] backdrop-blur-xl hidden flex-col overflow-hidden transition-all duration-200 z-[60]">
+                    <a href="whitepaper.html" class="px-4 py-4 text-xs text-gray-300 hover:text-white hover:bg-white/5 border-b border-gray-800 flex items-center justify-between font-bold tracking-wide">
+                        <span>PLOT18 PROTOCOL</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-bullish-green"></i>
+                    </a>
+                    <a href="momo_whitepaper.html" class="px-4 py-4 text-xs text-gray-300 hover:text-white hover:bg-white/5 flex items-center justify-between font-bold tracking-wide">
+                        <span>MOMO PROJECT</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-bullish-green"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
+        <div class="scanline"></div>
+
+        <!-- Page Header -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-2">
+                <span class="text-bullish-green font-terminal text-sm tracking-widest">>> SYSTEM.USER_CENTER</span>
+                <div class="h-px flex-grow bg-white/10"></div>
+            </div>
+            <h1 class="text-5xl sm:text-7xl font-impact tracking-tighter italic cyber-gradient-text uppercase">My Dividends</h1>
+            <p class="text-gray-400 font-terminal mt-2">Track your project investments and token holdings.</p>
+        </div>
+
+        <!-- Wallet Dashboard -->
+        <div class="grid grid-cols-1 gap-6 mb-12">
+            <div class="cyber-panel p-6 rounded-sm cyber-border-l">
+                <div class="text-gray-500 font-terminal text-xs mb-1">CONNECTED_WALLET</div>
+                <div id="display-address" class="text-white font-terminal truncate">NOT_CONNECTED</div>
+            </div>
+        </div>
+
+            <!-- Purchase Records -->
+            <div>
+                <h3 class="flex items-center gap-3 text-white font-terminal font-bold text-xl mb-6">
+                    <i class="fa-solid fa-receipt text-bullish-green"></i> PURCHASE_RECORDS
+                </h3>
+                <div id="investments-list" class="space-y-4">
+                    <!-- Loading State -->
+                    <div class="cyber-panel p-8 flex flex-col items-center justify-center border-dashed border-white/10">
+                        <i class="fa-solid fa-spinner fa-spin text-bullish-green text-3xl mb-4"></i>
+                        <p class="text-gray-400 font-terminal text-base uppercase tracking-widest">SYNCING_BLOCKCHAIN...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dividends Coming Soon -->
+            <div class="pt-12 mt-8 border-t border-white/5">
+                <h3 class="flex items-center gap-3 text-white font-terminal font-bold text-xl mb-6">
+                    <i class="fa-solid fa-gift text-desire-pink"></i> DIVIDEND_DISTRIBUTION
+                </h3>
+                <div class="cyber-panel p-8 border-l-2 border-desire-pink/30">
+                    <div class="flex items-start gap-4">
+                        <i class="fa-solid fa-circle-info text-desire-pink text-2xl mt-1 flex-shrink-0"></i>
+                        <div>
+                            <div class="text-white font-terminal font-bold mb-2 tracking-wider">AUTO_AIRDROP_PROTOCOL <span class="text-bullish-green animate-pulse">● ACTIVE</span></div>
+                            <p class="text-gray-400 font-terminal text-sm leading-relaxed mt-4">
+                                Dividend rewards in <span class="text-bullish-green font-bold bg-bullish-green/10 px-1 border border-bullish-green/30">USDT</span> are distributed automatically to your wallet.
+                                <br><br>
+                                The system utilizes on-chain snapshots to calculate holding proportions. Eligible accounts will receive airdrops directly. <span class="text-desire-pink font-bold">NO CLAIM ACTION REQUIRED.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Data Logic -->
+    <script>
+        let projectsLoaded = false;
+        let isShowingPrompt = false;
+        let lastAddress = undefined;
+        // Resilient observer that refreshes data when address or initialization state changes
+        const checkReady = setInterval(() => {
+            const addr = window.userAddress || null;
+            const prov = window.provider;
+            const isReady = window.web3Initialized;
+
+            if (!isReady || !prov) return;
+
+            // If address changed (even from null to addr or vice-versa)
+            if (addr !== lastAddress) {
+                console.log("Web3 State/Account Change detected:", addr);
+                lastAddress = addr;
+                loadUserData(addr, prov);
+            }
+        }, 1000);
+
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast("Contract Address Copied!", "success");
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                showToast("Failed to copy address", "error");
+            }
+        }
+
+        async function loadUserData(addr, prov) {
+            console.log("Loading user data for:", addr);
+            try {
+                if (addr) {
+                    showStatus('investments-list', 'SYNCING_BLOCKCHAIN...');
+                } else {
+                    showStatus('investments-list', 'WALLET_NOT_CONNECTED');
+                }
+
+                const projects = await getProjectsFromFactory(prov);
+                console.log("Projects found:", projects);
+
+                if (!projects || projects.length === 0) {
+                    showEmptyStates();
+                    return;
+                }
+                
+                if (addr) {
+                    // Update header dashboard
+                    const addrDisplay = document.getElementById('display-address');
+                    if (addrDisplay) addrDisplay.innerText = addr.substring(0, 6) + "..." + addr.substring(addr.length - 4);
+
+                    await renderInvestments(projects, addr, prov);
+                } else {
+                    const invList = document.getElementById('investments-list');
+                    if (invList) invList.innerHTML = `
+                        <div class="cyber-panel p-10 border-dashed border-white/10 flex flex-col items-center justify-center text-center">
+                            <i class="fa-solid fa-link-slash text-gray-600 text-4xl mb-4"></i>
+                            <div class="text-white font-terminal font-bold text-lg mb-2">WALLET_NOT_CONNECTED</div>
+                            <p class="text-gray-500 text-sm font-terminal mb-6">PLEASE CONNECT YOUR WALLET TO VIEW PERSONAL DATA</p>
+                            <button onclick="openWalletModal()" class="btn-claim text-xs px-8 py-3">CONNECT_NOW</button>
+                        </div>
+                    `;
+                }
+
+            } catch (err) {
+                console.error("Critical Failure in loadUserData:", err);
+                showToast(err.reason || err.message || "Unknown Error", "error");
+                showErrorStates(err.reason || err.message || "Unknown Error");
+            }
+        }
+
+        async function getProjectsFromFactory(prov) {
+            try {
+                if (window.allProjects && window.allProjects.length > 0) return window.allProjects;
+                
+                const factoryAddr = window.FACTORY_ADDRESS || "0x0618d42bd847E6F1EEBB9F260A242708582B81be";
+                const factoryContract = new ethers.Contract(factoryAddr, FACTORY_ABI, prov);
+                return await factoryContract.getAllProjectlist();
+            } catch (e) {
+                console.error("Factory fetch failed:", e);
+                throw e;
+            }
+        }
+
+        async function renderInvestments(projectAddresses, addr, prov) {
+            const container = document.getElementById('investments-list');
+            if (!container) return;
+            let html = '';
+            let found = 0;
+
+            const CHUNK_SIZE = 5;
+            for (let i = 0; i < projectAddresses.length; i += CHUNK_SIZE) {
+                const chunk = projectAddresses.slice(i, i + CHUNK_SIZE);
+                const chunkPromises = chunk.map(async (projectAddr) => {
+                    try {
+                        const projectContract = new ethers.Contract(projectAddr, FUNDRAISING_PROJECT_ABI, prov);
+                        const buyerData = await projectContract.buyers(addr);
+
+                        if (buyerData.basePay.gt(0)) {
+                            const name = await getProjectName(projectAddr, prov);
+                            const info = await projectContract.product();
+                            const baseToken = new ethers.Contract(info.baseToken, ["function decimals() view returns (uint8)"], prov);
+                            const presaleToken = new ethers.Contract(info.presaleToken, ["function decimals() view returns (uint8)"], prov);
+                            const baseDec = await baseToken.decimals().catch(() => 18);
+                            const preDec = await presaleToken.decimals().catch(() => 18);
+                            
+                            const spent = ethers.utils.formatUnits(buyerData.basePay, baseDec);
+                            const owed = ethers.utils.formatUnits(buyerData.tokensOwed, preDec);
+                            const tokenAddr = info.presaleToken;
+                            const tokenSymbol = await presaleToken.symbol().catch(() => "TOKEN");
+                            
+                            return { valid: true, name, projectAddr, spent, owed, tokenAddr, tokenSymbol };
+                        }
+                    } catch (e) { console.warn("Investment check error:", e); }
+                    return { valid: false };
+                });
+
+                const results = await Promise.all(chunkPromises);
+                for (const res of results) {
+                        if (res.valid) {
+                        found++;
+                        const tokenAddr = res.tokenAddr;
+                        const tokenSymbol = res.tokenSymbol;
+                        const preDec = 18; // Default or fetch if needed, but 18 is standard for these
+                        const simplifiedTokenAddr = `${tokenAddr.substring(0, 6)}...${tokenAddr.substring(tokenAddr.length - 4)}`;
+                        const simplifiedProjectAddr = `${res.projectAddr.substring(0, 6)}...${res.projectAddr.substring(res.projectAddr.length - 4)}`;
+                        const explorerUrl = (window.TARGET_EXPLORER_URL || "https://testnet.bscscan.com/").replace(/\/$/, '') + "/address/" + res.projectAddr;
+
+                        html += `
+                            <div class="cyber-panel p-5 flex flex-col border-l-2 border-white/20">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4">
+                                    <div>
+                                        <div class="text-white font-bold font-terminal uppercase tracking-wider text-lg">${res.name}</div>
+                                        <a href="${explorerUrl}" target="_blank" class="text-xs text-bullish-green hover:text-white font-mono flex items-center gap-1 transition-colors">
+                                            ${simplifiedProjectAddr} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                    <div class="text-left sm:text-right border-l sm:border-l-0 sm:border-r border-bullish-green/30 pl-3 sm:pl-0 sm:pr-3">
+                                        <div class="text-bullish-green font-terminal font-bold text-base">${parseFloat(res.owed).toFixed(2)} TOKENS</div>
+                                        <div class="text-xs text-gray-500">INVESTED: ${parseFloat(res.spent).toFixed(2)} USDT</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Token Asset Import Section -->
+                                <div class="mt-5 pt-5 border-t border-white/5 bg-black/40 p-4 rounded-sm">
+                                    <div class="flex items-center justify-between gap-2 mb-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-1 h-4 bg-desire-pink shadow-[0_0_5px_#FF00FF]"></div>
+                                            <div class="text-xs text-desire-pink font-terminal uppercase tracking-widest font-bold">>> TOKEN_ASSET_IMPORT</div>
+                                        </div>
+                                        <!-- Import Button (Desktop) -->
+                                        <button onclick="importTokenToWallet('${tokenAddr}', '${tokenSymbol}', ${preDec})" 
+                                            class="hidden sm:flex items-center gap-2 bg-desire-pink/10 border border-desire-pink/50 text-desire-pink px-3 py-1.5 rounded-sm font-terminal text-[10px] font-bold hover:bg-desire-pink hover:text-white transition-all shadow-[0_0_10px_rgba(255,0,255,0.2)]">
+                                            <i class="fa-solid fa-plus-circle"></i> IMPORT $${tokenSymbol}
+                                        </button>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 font-terminal mb-4 leading-relaxed max-w-md">
+                                        Sync your project tokens to your wallet to view balance and manage assets. 
+                                    </p>
+                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                        <div class="flex-grow bg-black/60 border border-gray-800 px-4 py-3 rounded flex items-center justify-between group hover:border-bullish-green/30 transition-colors">
+                                            <code class="text-bullish-green font-mono text-sm">${simplifiedTokenAddr}</code>
+                                            <button onclick="copyToClipboard('${tokenAddr}')" class="text-gray-400 hover:text-white transition-all transform hover:scale-110 active:scale-95 px-2" title="Copy Contract Address">
+                                                <i class="fa-solid fa-copy text-sm"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Import Button (Mobile) -->
+                                        <button onclick="importTokenToWallet('${tokenAddr}', '${tokenSymbol}', ${preDec})" 
+                                            class="sm:hidden w-full bg-desire-pink text-white font-terminal font-bold text-xs py-4 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(255,0,255,0.4)]">
+                                            <i class="fa-solid fa-plus-circle"></i> IMPORT $${tokenSymbol} TO WALLET
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            container.innerHTML = found > 0 ? html : '<div class="text-gray-600 font-terminal text-center p-12 bg-white/5 border border-dashed border-white/5">NO_INVESTMENTS_FOUND</div>';
+        }
+
+        // Centralized handleClaim is now in web3_integration.js
+
+        async function getProjectName(addr, prov) {
+            if (typeof getProjectMetadata === 'function') {
+                const meta = getProjectMetadata(addr);
+                if (meta && meta.title && !meta.title.includes("ASSET")) return meta.title;
+            }
+            return "PROJECT_" + addr.substring(2, 6).toUpperCase();
+        }
+
+        function showStatus(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<div class="p-8 flex flex-col items-center justify-center opacity-50"><i class="fa-solid fa-spinner fa-spin text-bullish-green mb-4"></i><p class="text-[10px] font-terminal uppercase">${text}</p></div>`;
+        }
+
+        function showConnectPrompt() {
+            const prompt = `
+                <div class="cyber-panel p-8 border-dashed border-white/10 flex flex-col items-center justify-center text-center">
+                    <i class="fa-solid fa-link-slash text-gray-600 text-3xl mb-4"></i>
+                    <div class="text-white font-terminal font-bold mb-2">WALLET_NOT_CONNECTED</div>
+                    <p class="text-gray-500 text-xs font-terminal mb-6">PLEASE CONNECT YOUR WALLET TO VIEW PERSONAL DATA</p>
+                    <button onclick="openWalletModal()" class="btn-claim text-[10px]">CONNECT_NOW</button>
+                </div>
+            `;
+            const invList = document.getElementById('investments-list');
+            const divList = document.getElementById('dividends-list');
+            if (invList) invList.innerHTML = prompt;
+            if (divList) divList.innerHTML = prompt;
+        }
+
+        function showEmptyStates() {
+            const invList = document.getElementById('investments-list');
+            if (invList) invList.innerHTML = '<div class="text-gray-600 font-terminal text-center p-12 opacity-50">EMPTY_VAULT</div>';
+        }
+
+        function showErrorStates(msg) {
+            const errHtml = `<div class="text-red-500 font-terminal text-center p-4 bg-red-900/10 border border-red-900/50 text-xs">ERR: ${msg}</div>`;
+            const invList = document.getElementById('investments-list');
+            if (invList) invList.innerHTML = errHtml;
+        }
+
+    </script>
+    <!-- Footer -->
+    <footer class="bg-black py-16 border-t border-gray-800 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-white text-2xl font-impact tracking-widest flex items-center gap-2">
+                <div class="w-3 h-3 bg-bullish-green animate-pulse"></div>
+                plot 18
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-8 text-xl">
+                <a href="https://x.com/plot18" target="_blank" class="text-gray-600 hover:text-[#1DA1F2] transition-colors"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://t.me/plot18_com" target="_blank" title="Support & Service" class="text-[#00FF41] hover:text-white transition-colors"><i class="fa-brands fa-telegram"></i></a>
+                <a href="https://t.me/plot18app" target="_blank" title="Official Account" class="text-[#0088cc] hover:text-white transition-colors"><i class="fa-brands fa-telegram"></i></a>
+            </div>
+
+            <div class="flex gap-6 text-xs text-gray-600 font-terminal uppercase">
+                <a href="whitepaper.html" class="hover:text-white transition-colors">Whitepaper</a>
+                <span>&copy; 2025 plot 18. All Rights Reserved.</span>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- User scripts end -->
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletSelectModal" class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeWalletModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletModalContent">
+            <button onclick="closeWalletModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-impact tracking-widest text-white mb-2 text-center">CONNECT <span class="text-bullish-green">WALLET</span></h3>
+            <p class="text-xs text-gray-400 font-terminal text-center mb-6">SELECT YOUR PROVIDER TO INITIATE UPLINK</p>
+
+            <div class="space-y-3">
+                <button onclick="handleWalletSelection('metamask')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/metamask.png" alt="MetaMask" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">MetaMask</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <button onclick="handleWalletSelection('okx')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/okx.png" alt="OKX" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">OKX Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- TokenPocket -->
+                <button onclick="handleWalletSelection('tokenpocket')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/tokenpocket.png" alt="TokenPocket" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">TokenPocket</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <button onclick="handleWalletSelection('coinbase')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/coinbase.png" alt="Coinbase" class="w-8 h-8 object-contain rounded-full">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Coinbase Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Trust Wallet -->
+                <button onclick="handleWalletSelection('trustwallet')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/trustwallet.png" alt="Trust Wallet" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Trust Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-400 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- SafePal -->
+                <button onclick="handleWalletSelection('safepal')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-gray-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/safepal.png" alt="SafePal" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">SafePal</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-gray-400 text-sm"></i>
+                    </div>
+                </button>
+                <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                   <span class="text-[10px] text-gray-600 font-terminal block">// SECURE PROTOCOL V1.0 //</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div id="walletDownloadModal" class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeDownloadModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletDownloadContent">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"></i>
+                <h3 class="text-2xl font-impact tracking-widest text-white mb-2">APP NOT <span class="text-desire-pink">FOUND</span></h3>
+                <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">It looks like you don't have this Wallet App installed on your device.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="downloadModalBtn" href="#" target="_blank" class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button">
+                    DOWNLOAD APP
+                </a>
+                <button onclick="closeDownloadModal(); openWalletModal();" class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors">
+                    CHOOSE ANOTHER WALLET
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Token Import Modal -->
+    <div id="importTokenModal" class="fixed inset-0 z-[11000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity pointer-events-auto" onclick="closeImportModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-md w-[95%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_40px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="importTokenContent">
+            <button onclick="closeImportModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-bullish-green/10 border border-bullish-green flex items-center justify-center rounded-lg">
+                        <i class="fa-solid fa-hand-holding-heart text-bullish-green"></i>
+                    </div>
+                    <h3 class="text-2xl font-impact tracking-widest text-white uppercase italic">Manual <span class="text-bullish-green">Import</span></h3>
+                </div>
+                
+                <div class="space-y-4 font-body text-gray-300 text-sm leading-relaxed border-l-2 border-bullish-green/30 pl-4 py-1">
+                    <p>It seems your mobile wallet app has restricted automatic token synchronization. To view your project tokens, please perform a manual import:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-400">
+                        <li>Click the <span class="text-white font-bold">CONFIRM & COPY</span> button below.</li>
+                        <li>Open your <span class="text-bullish-green font-bold">Wallet App</span> (MetaMask, OKX, etc.).</li>
+                        <li>Navigate to <span class="text-white font-bold">"Import Tokens"</span> or <span class="text-white font-bold">"Add Custom Token"</span>.</li>
+                        <li>Paste the contract address into the <span class="text-white font-bold">"Token Address"</span> field.</li>
+                        <li>Verify the symbol and decimals, then confirm the import.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button id="confirmCopyBtn" onclick="confirmAndCopyTokenAddress()" class="w-full bg-bullish-green text-black font-terminal font-bold text-sm py-4 transition-all hover:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] clip-button uppercase tracking-widest">
+                    Confirm & Copy Address
+                </button>
+                <button onclick="closeImportModal()" class="w-full bg-transparent border border-gray-700 text-gray-500 hover:text-white hover:border-gray-400 font-terminal font-bold text-xs py-2 transition-colors uppercase">
+                    Back to Dashboard
+                </button>
+            </div>
+            
+            <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                <span class="text-[9px] text-gray-600 font-terminal block tracking-[0.2em] uppercase">// End-to-End Secure Protocol //</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle Logic
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('mobile-menu-icon');
+            if (menu && icon) {
+                if (menu.classList.contains('hidden')) {
+                    menu.classList.remove('hidden');
+                    menu.classList.add('block');
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-xmark');
+                } else {
+                    menu.classList.add('hidden');
+                    menu.classList.remove('block');
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

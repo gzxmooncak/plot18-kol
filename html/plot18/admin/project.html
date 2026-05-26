@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="zh-CN" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>项目管理详情 | plot 18</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="shortcut icon" href="https://plot18.com/plot18.ico" type="image/x-icon" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/abis.js"></script>
+    <script src="../js/ui_components.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/web3_integration.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "bullish-green": "#00FF41",
+              "desire-pink": "#FF00FF",
+              "pure-black": "#000000",
+              "dark-gray": "#111111",
+            },
+            fontFamily: {
+              impact: ["Anton", "sans-serif"],
+              terminal: ["JetBrains Mono", "monospace"],
+              body: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #000;
+        color: #e5e5e5;
+        cursor: default;
+      }
+
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background:
+          linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+          linear-gradient(
+            90deg,
+            rgba(255, 0, 0, 0.06),
+            rgba(0, 255, 0, 0.02),
+            rgba(0, 0, 255, 0.06)
+          );
+        z-index: 9998;
+        background-size:
+          100% 2px,
+          3px 100%;
+        pointer-events: none;
+      }
+
+      .cyber-panel {
+        background: rgba(10, 10, 10, 0.85);
+        border: 1px solid #333;
+        position: relative;
+        backdrop-filter: blur(5px);
+      }
+
+      .cyber-panel::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        width: 10px;
+        height: 10px;
+        border-top: 2px solid #ff0000;
+        border-left: 2px solid #ff0000;
+      }
+
+      .cyber-panel::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        width: 10px;
+        height: 10px;
+        border-bottom: 2px solid #ff0000;
+        border-right: 2px solid #ff0000;
+      }
+
+      .btn-standard {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        clip-path: polygon(
+          10px 0,
+          100% 0,
+          100% calc(100% - 10px),
+          calc(100% - 10px) 100%,
+          0 100%,
+          0 10px
+        );
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      /* Modal Overlay */
+      #safety-modal {
+        transition: opacity 0.3s ease-in-out;
+      }
+      #safety-modal.hidden {
+        display: none;
+        opacity: 0;
+      }
+
+      /* Modal Active States */
+      #walletSelectModal.active #walletModalContent,
+      #walletDownloadModal.active #walletDownloadContent {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+      }
+    </style>
+  </head>
+
+  <body
+    class="min-h-screen flex flex-col font-body bg-black text-gray-300 selection:bg-red-500 selection:text-black"
+  >
+    <nav
+      class="fixed top-0 w-full z-50 border-b border-red-900 bg-black/90 backdrop-blur-md"
+    >
+      <div
+        class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between"
+      >
+        <a href="index.html" class="flex items-center gap-2 group">
+          <i class="fa-solid fa-code-branch text-red-500 text-xl"></i>
+          <span class="font-impact text-2xl tracking-wider text-white"
+            >PLOT<span class="text-red-500">18</span></span
+          >
+          <span class="font-mono text-[10px] text-gray-400 mt-1 ml-2"
+            >/ ADMIN / CONTROL_PANEL</span
+          >
+        </a>
+        <div class="flex items-center gap-4">
+          <div
+            id="blockHeightDisplay"
+            class="hidden md:flex items-center gap-2 font-terminal text-[10px] text-gray-500 border border-gray-800 px-3 py-2 bg-black/50 mr-4"
+          >
+            <span class="text-bullish-green animate-pulse">●</span> 区块:
+            <span id="currentBlockNum" class="text-white">...</span>
+          </div>
+          <button
+            id="connectWalletBtn"
+            onclick="openWalletModal()"
+            class="font-terminal text-xs border border-red-500 text-red-500 px-4 py-2 hover:bg-red-500 hover:text-black transition-colors uppercase"
+          >
+            [ 连接钱包 ]
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="flex-grow pt-24 pb-20 px-6 max-w-6xl mx-auto w-full">
+      <!-- Back Button -->
+      <a
+        href="index.html"
+        class="inline-flex items-center text-gray-500 hover:text-red-500 mb-8 font-terminal text-xs transition-colors group"
+      >
+        <i
+          class="fa-solid fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"
+        ></i>
+        返回控制台 (DASHBOARD)
+      </a>
+
+      <!-- Loading State -->
+      <div
+        id="loading-container"
+        class="flex flex-col items-center justify-center py-20"
+      >
+        <div class="animate-spin text-red-500 text-4xl mb-4">
+          <i class="fa-solid fa-circle-notch"></i>
+        </div>
+        <p class="font-terminal text-sm text-gray-500">
+          正在读取项目合约数据...
+        </p>
+      </div>
+
+      <div id="admin-detail-container" class="hidden flex flex-col space-y-6">
+        <!-- 1. Top: Status & Quick Actions -->
+        <div class="cyber-panel p-6">
+          <div class="flex items-start gap-4 mb-4">
+            <img
+              id="project-img"
+              src=""
+              class="w-16 h-16 object-cover border border-gray-700"
+            />
+            <div>
+              <h2
+                id="project-title"
+                class="text-2xl font-impact text-white uppercase tracking-wide"
+              >
+                PROJECT NAME
+              </h2>
+              <div
+                class="text-xs font-mono text-gray-400 break-all mt-1"
+                id="project-addr"
+              >
+                0x...
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-900 border border-gray-800 p-3">
+              <div class="text-xs text-gray-500 uppercase mb-1">
+                状态 (State)
+              </div>
+              <div
+                id="status-badge"
+                class="text-sm font-bold text-white tracking-widest"
+              >
+                ACTIVE
+              </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 p-3">
+              <div class="text-xs text-gray-500 uppercase mb-1">
+                当前权限 (Your Rights)
+              </div>
+              <div
+                id="is-admin-badge"
+                class="text-sm font-bold text-red-500 tracking-widest"
+              >
+                UNKNOWN
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Control moved here logically -->
+          <div class="border-t border-gray-800 pt-4 mt-4">
+            <h3
+              class="font-terminal text-sm font-bold text-red-500 mb-3 uppercase"
+            >
+              风险控制 (RISK CONTROL)
+            </h3>
+            <div class="flex gap-4">
+              <button
+                onclick="confirmAction('pause')"
+                class="flex-1 btn-standard bg-yellow-600 border border-yellow-500 text-black py-3 text-sm font-bold hover:bg-white hover:text-black"
+              >
+                <i class="fa-solid fa-pause mr-2"></i> 熔断 (PAUSE)
+              </button>
+              <button
+                onclick="confirmAction('resume')"
+                class="flex-1 btn-standard bg-green-600 border border-green-500 text-black py-3 text-sm font-bold hover:bg-white hover:text-black"
+              >
+                <i class="fa-solid fa-play mr-2"></i> 恢复 (RESUME)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Purchase Logs -->
+        <div class="cyber-panel p-6 border border-blue-900/40">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="font-impact text-2xl text-white uppercase tracking-wide">
+              <i class="fa-solid fa-receipt mr-2 text-blue-400"></i>购买记录
+              <span class="text-blue-400 text-xl">(PURCHASE LOGS)</span>
+            </h3>
+            <div class="flex items-center gap-3">
+              <span
+                id="log-count"
+                class="text-xs font-mono text-blue-500 bg-blue-900/20 px-2 py-0.5 border border-blue-900/30"
+                >Total: --</span
+              >
+              <button
+                onclick="refreshPurchaseLogs()"
+                class="text-xs text-blue-400 hover:text-white transition-colors"
+              >
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="overflow-x-auto overflow-y-auto max-h-96 custom-scrollbar"
+          >
+            <table class="w-full text-left border-collapse">
+              <thead
+                class="bg-blue-950/40 text-[10px] font-terminal text-gray-400 uppercase tracking-tighter sticky top-0"
+              >
+                <tr>
+                  <th class="p-3 border-b border-blue-900/30">区块 (Block)</th>
+                  <th class="p-3 border-b border-blue-900/30">
+                    买家地址 (Buyer)
+                  </th>
+                  <th class="p-3 border-b border-blue-900/30">支付 (U)</th>
+                  <th class="p-3 border-b border-blue-900/30">获得 (币)</th>
+                </tr>
+              </thead>
+              <tbody
+                id="purchase-logs-body"
+                class="text-xs font-mono text-gray-300"
+              >
+                <tr>
+                  <td colspan="4" class="p-10 text-center text-gray-500 italic">
+                    正在加载记录... (Loading)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="load-more-container" class="mt-6 text-center hidden">
+            <button
+              id="btn-load-more"
+              onclick="loadMoreLogs()"
+              class="px-6 py-2 border border-blue-900/50 text-[10px] text-blue-400 hover:bg-blue-900/20 hover:text-white uppercase tracking-widest transition-all"
+            >
+              加载更多 (LOAD MORE)
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Time Config -->
+        <div class="cyber-panel p-6">
+          <h3
+            class="font-impact text-2xl text-white mb-5 uppercase tracking-wide"
+          >
+            <i class="fa-solid fa-clock mr-2 text-blue-500"></i>时间周期配置
+            <span class="text-blue-500 text-xl">(TIMELINE)</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <div class="bg-black border border-gray-800 p-3">
+              <label
+                class="block text-xs font-terminal text-gray-500 mb-2 uppercase"
+                >开始区块 (START)</label
+              >
+              <input
+                type="number"
+                id="new-start-block"
+                class="w-full bg-gray-900 border border-gray-700 text-white font-mono text-base p-2 outline-none focus:border-blue-500 transition-colors mb-2"
+                oninput="updateDateEst('new-start-block', 'start-est')"
+              />
+
+              <div class="flex items-center gap-2 mb-1">
+                <span
+                  class="text-[10px] text-gray-500 whitespace-nowrap hidden lg:inline"
+                  >按日期预估:</span
+                >
+                <div
+                  class="flex bg-gray-900 border border-gray-800 rounded-sm w-full focus-within:border-blue-500 overflow-hidden"
+                >
+                  <input
+                    type="datetime-local"
+                    id="start-date"
+                    max="9999-12-31T23:59"
+                    class="bg-transparent text-gray-400 text-[10px] p-1 flex-grow outline-none border-none"
+                  />
+                  <button
+                    onclick="
+                      calculateBlockFromDate(
+                        'start-date',
+                        'new-start-block',
+                        'start-est',
+                        'curr-start',
+                      )
+                    "
+                    class="bg-gray-800 hover:bg-blue-600 hover:text-white text-gray-300 text-[10px] px-2 font-bold transition-colors"
+                  >
+                    应用
+                  </button>
+                </div>
+              </div>
+              <div
+                id="start-est"
+                class="text-[10px] text-blue-400 font-mono min-h-[15px] mb-2"
+              ></div>
+
+              <button
+                onclick="fillStartBlock()"
+                class="text-[10px] text-gray-500 hover:text-white underline block mb-3"
+              >
+                [快捷设置: 当前+100后开始, 持续5000块]
+              </button>
+
+              <div
+                class="mt-2 text-xs text-gray-400 border-t border-gray-800 pt-2"
+              >
+                目前:
+                <span id="curr-start" class="font-mono text-white">0</span>
+              </div>
+            </div>
+            <div
+              class="bg-black border border-gray-800 p-3 flex flex-col justify-end"
+            >
+              <label
+                class="block text-xs font-terminal text-gray-500 mb-2 uppercase"
+                >结束区块 (END)</label
+              >
+              <input
+                type="number"
+                id="new-end-block"
+                class="w-full bg-gray-900 border border-gray-700 text-white font-mono text-base p-2 outline-none focus:border-blue-500 transition-colors mb-2"
+                oninput="updateDateEst('new-end-block', 'end-est')"
+              />
+
+              <div class="flex items-center gap-2 mb-1">
+                <span
+                  class="text-[10px] text-gray-500 whitespace-nowrap hidden lg:inline"
+                  >按日期预估:</span
+                >
+                <div
+                  class="flex bg-gray-900 border border-gray-800 rounded-sm w-full focus-within:border-blue-500 overflow-hidden"
+                >
+                  <input
+                    type="datetime-local"
+                    id="end-date"
+                    max="9999-12-31T23:59"
+                    class="bg-transparent text-gray-400 text-[10px] p-1 flex-grow outline-none border-none"
+                  />
+                  <button
+                    onclick="
+                      calculateBlockFromDate(
+                        'end-date',
+                        'new-end-block',
+                        'end-est',
+                        'curr-start',
+                      )
+                    "
+                    class="bg-gray-800 hover:bg-blue-600 hover:text-white text-gray-300 text-[10px] px-2 font-bold transition-colors"
+                  >
+                    应用
+                  </button>
+                </div>
+              </div>
+              <div
+                id="end-est"
+                class="text-[10px] text-blue-400 font-mono min-h-[15px] mb-2"
+              ></div>
+
+              <div class="mb-3 min-h-[15px]"></div>
+              <!-- Spacer to match button height on left -->
+
+              <div
+                class="mt-2 text-xs text-gray-400 border-t border-gray-800 pt-2"
+              >
+                目前: <span id="curr-end" class="font-mono text-white">0</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onclick="adminAction_UpdateTimes()"
+            class="w-full btn-standard bg-blue-900 text-white py-3 text-sm font-bold hover:bg-blue-600 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+          >
+            更新时间 (UPDATE BLOCKS)
+          </button>
+        </div>
+
+        <!-- 3. Limits Config -->
+        <div class="cyber-panel p-6 border border-purple-900/50">
+          <h3
+            class="font-impact text-2xl text-white mb-2 uppercase tracking-wide"
+          >
+            <i class="fa-solid fa-scale-balanced mr-2 text-purple-500"></i
+            >限额配置 <span class="text-purple-500 text-xl">(LIMITS)</span>
+          </h3>
+          <p
+            class="text-xs text-red-500 mb-5 bg-red-900/20 px-2 py-1 inline-block border border-red-900/30"
+          >
+            * 注意：仅能在状态为【PAUSED (熔断)】时修改限额
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <div class="bg-black border border-gray-800 p-3">
+              <label
+                class="block text-xs font-terminal text-gray-500 mb-2 uppercase"
+                >单笔最低限额 (MIN)</label
+              >
+              <input
+                type="number"
+                id="new-min"
+                class="w-full bg-gray-900 border border-gray-700 text-white font-mono text-base p-2 outline-none focus:border-purple-500 transition-colors"
+              />
+              <div class="mt-2 text-xs text-gray-400">
+                目前: <span id="curr-min" class="font-mono text-white">0</span>
+              </div>
+            </div>
+            <div class="bg-black border border-gray-800 p-3">
+              <label
+                class="block text-xs font-terminal text-gray-500 mb-2 uppercase"
+                >单笔最高限额 (MAX)</label
+              >
+              <input
+                type="number"
+                id="new-max"
+                class="w-full bg-gray-900 border border-gray-700 text-white font-mono text-base p-2 outline-none focus:border-purple-500 transition-colors"
+              />
+              <div class="mt-2 text-xs text-gray-400">
+                目前: <span id="curr-max" class="font-mono text-white">0</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onclick="adminAction_UpdateLimits()"
+            class="w-full btn-standard bg-purple-900 text-white py-3 text-sm font-bold hover:bg-purple-600 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+          >
+            更新限额 (UPDATE LIMITS)
+          </button>
+        </div>
+
+        <!-- 4. Token Inventory Mangement -->
+        <div class="cyber-panel p-6">
+          <h3 class="font-impact text-2xl text-white mb-6 uppercase">
+            <i class="fa-solid fa-coins mr-2 text-bullish-green"></i
+            >代币库存管理
+            <span class="text-bullish-green text-xl">(TOKEN TREASURY)</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-blue-900/10 border border-blue-900 p-3">
+              <div class="text-sm font-terminal text-gray-500 mb-1">
+                合约金库余币 (Vault Tokens)
+              </div>
+              <div
+                id="vault-balance"
+                class="font-mono text-xl text-white font-bold tracking-wider"
+              >
+                --
+              </div>
+            </div>
+            <div class="bg-black border border-gray-800 p-3">
+              <div class="text-sm font-terminal text-gray-500 mb-1">
+                您的钱包余币 (Wallet Tokens)
+              </div>
+              <div
+                id="admin-wallet-balance"
+                class="font-mono text-xl text-bullish-green font-bold tracking-wider"
+              >
+                --
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Fund Ops -->
+            <div>
+              <div class="flex flex-col md:flex-row gap-3 mb-2">
+                <input
+                  type="number"
+                  id="fund-amount"
+                  placeholder="代币数量 Token Amount"
+                  class="flex-1 bg-black border border-gray-800 text-white font-mono text-base p-3 outline-none focus:border-bullish-green transition-colors"
+                />
+                <div class="flex flex-1 gap-2">
+                  <button
+                    onclick="adminAction_AddCandy()"
+                    class="flex-1 btn-standard bg-green-600 text-black py-3 text-sm font-bold hover:bg-white transition-colors"
+                  >
+                    存入代币 (ADD)
+                  </button>
+                  <button
+                    onclick="confirmAction('withdraw')"
+                    class="flex-1 btn-standard bg-red-600 text-white py-3 text-sm font-bold hover:bg-red-500 transition-colors"
+                  >
+                    提取代币 (WITHDRAW)
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 italic">
+                <span class="text-red-500">* 注意：</span
+                >管理员可以随时存入代币补充预售额度，但仅在项目结束后允许提取剩余未售出的代币。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Emergency Exit -->
+        <div class="cyber-panel p-6 border border-red-900 bg-red-900/10">
+          <h3
+            class="font-impact text-2xl text-red-500 mb-3 uppercase tracking-wide"
+          >
+            <i class="fa-solid fa-biohazard mr-2"></i>紧急撤离 (EMERGENCY EXIT)
+          </h3>
+          <p class="text-sm text-gray-300 mb-5 leading-relaxed">
+            将合约内所有剩余预售代币退回给管理员。这通常意味着项目终止。
+            <br /><span
+              class="text-red-400 font-bold bg-red-900/40 px-2 py-1 inline-block mt-2 border border-red-900"
+              >⚠️ 危险操作: 此操作可能不可逆。</span
+            >
+          </p>
+          <button
+            onclick="confirmAction('refund')"
+            class="w-full btn-standard bg-red-800 text-white py-4 text-sm hover:bg-red-600 font-bold uppercase shadow-[0_0_15px_rgba(255,0,0,0.4)]"
+          >
+            退回剩余代币 (REFUND ALL TOKENS)
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <div
+      id="toast-container"
+      class="fixed top-24 right-5 z-[100] flex flex-col gap-2 pointer-events-none"
+    ></div>
+
+    <!-- SAFETY MODAL -->
+    <div
+      id="safety-modal"
+      class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    >
+      <div
+        class="cyber-panel bg-black border border-red-500 p-8 max-w-sm w-full shadow-[0_0_50px_rgba(255,0,0,0.2)]"
+      >
+        <h3
+          class="font-impact text-2xl text-red-500 uppercase mb-4 text-center"
+        >
+          ⚠️ 安全警告 (WARNING)
+        </h3>
+        <p
+          id="modal-msg"
+          class="text-sm font-mono text-gray-300 mb-8 text-center leading-relaxed"
+        >
+          正在执行高风险操作。您确定要继续吗？
+        </p>
+        <div class="flex gap-4">
+          <button
+            onclick="closeModal()"
+            class="flex-1 btn-standard bg-gray-800 text-white py-3 text-xs hover:bg-gray-700"
+          >
+            取消 (CANCEL)
+          </button>
+          <button
+            id="modal-confirm-btn"
+            class="flex-1 btn-standard bg-red-600 text-white py-3 text-xs hover:bg-red-500 font-bold"
+          >
+            确认执行 (CONFIRM)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Init
+      window.addEventListener("load", async () => {
+        setTimeout(() => {
+          if (typeof loadAdminProjectDetails === "function") {
+            loadAdminProjectDetails();
+          } else {
+            console.error("loadAdminProjectDetails function not found");
+          }
+        }, 1000);
+      });
+
+      // Modal Logic
+      const modal = document.getElementById("safety-modal");
+      const modalMsg = document.getElementById("modal-msg");
+      const confirmBtn = document.getElementById("modal-confirm-btn");
+
+      function closeModal() {
+        modal.classList.add("hidden");
+      }
+
+      function confirmAction(type) {
+        modal.classList.remove("hidden");
+
+        // Set Text and Action based on type
+        if (type === "pause") {
+          modalMsg.innerHTML =
+            "您正在尝试 <span class='text-red-500 font-bold'>熔断 (PAUSE)</span> 合约。<br>这将暂停所有用户交易。";
+          confirmBtn.onclick = () => {
+            adminAction_Pause();
+            closeModal();
+          };
+        } else if (type === "resume") {
+          modalMsg.innerHTML =
+            "您正在尝试 <span class='text-green-500 font-bold'>恢复 (RESUME)</span> 合约。<br>交易将重新开放。";
+          confirmBtn.onclick = () => {
+            adminAction_Resume();
+            closeModal();
+          };
+        } else if (type === "refund") {
+          modalMsg.innerHTML =
+            "您正在尝试 <span class='text-red-500 font-bold'>退回剩余代币 (REFUND)</span>。<br>这将提取合约内所有未售出代币及糖果。";
+          confirmBtn.onclick = () => {
+            adminAction_RefundAll();
+            closeModal();
+          };
+        } else if (type === "withdraw") {
+          modalMsg.innerHTML =
+            "您正在尝试 <span class='text-red-500 font-bold'>提取资金 (WITHDRAW)</span>。<br>仅限项目结束后操作。";
+          confirmBtn.onclick = () => {
+            adminAction_WithdrawCandy();
+            closeModal();
+          };
+        }
+      }
+
+      // Block & Date Calculation Logic (Same as create.html)
+      async function getNetworkBlockParams() {
+        let currentBlockNum = 0;
+        const currentBlockSpan = document.getElementById("currentBlockNum");
+        if (
+          currentBlockSpan &&
+          currentBlockSpan.innerText !== "..." &&
+          !isNaN(parseInt(currentBlockSpan.innerText))
+        ) {
+          currentBlockNum = parseInt(currentBlockSpan.innerText);
+        } else if (window.provider) {
+          try {
+            currentBlockNum = await window.provider.getBlockNumber();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        // A-07 Fix: Do not use a fake block height if provider is unavailable.
+        // Return 0 to signal callers that the block number is unknown.
+        if (!currentBlockNum) {
+          showToast(
+            "无法获取当前区块高度，请先连接钱包后再使用区块/日期计算功能",
+            "error",
+          );
+          return { currentBlockNum: 0, blockTimeSeconds: 3 };
+        }
+        return { currentBlockNum, blockTimeSeconds: 3 }; // Approx BSC block time
+      }
+
+      async function updateDateEst(inputId, estId) {
+        const inputVal = document.getElementById(inputId).value;
+        const estDiv = document.getElementById(estId);
+        if (!inputVal) {
+          estDiv.innerText = "";
+          return;
+        }
+        const targetBlock = parseInt(inputVal);
+        const { currentBlockNum, blockTimeSeconds } =
+          await getNetworkBlockParams();
+
+        const diffBlocks = targetBlock - currentBlockNum;
+        const diffSeconds = diffBlocks * blockTimeSeconds;
+
+        const targetDate = new Date();
+        targetDate.setSeconds(targetDate.getSeconds() + diffSeconds);
+
+        // Format nice string
+        const pad = (n) => (n < 10 ? "0" + n : n);
+        const formatted = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())} ${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}`;
+
+        if (diffBlocks > 0) {
+          estDiv.innerText = `≈ ${formatted} (未来)`;
+          estDiv.className =
+            "text-[10px] text-blue-400 font-mono min-h-[15px] mb-2";
+        } else {
+          estDiv.innerText = `≈ ${formatted} (已过去)`;
+          estDiv.className =
+            "text-[10px] text-yellow-500 font-mono min-h-[15px] mb-2";
+        }
+      }
+
+      async function calculateBlockFromDate(
+        dateInputId,
+        blockInputId,
+        estDisplayId,
+        currentStartId,
+      ) {
+        const dateVal = document.getElementById(dateInputId).value;
+        if (!dateVal) {
+          showToast("请先选择一个日期时间", "error");
+          return;
+        }
+
+        // Parse target date and get current time
+        const targetTimeMs = new Date(dateVal).getTime();
+        const currentTimeMs = new Date().getTime();
+
+        // We need a baseline to calculate blocks from.
+        // In project.html, if the project has already started, computing strictly from "now" might cause drifts.
+        // However, since BSC block times are constant, computing from "current chain state" is the safest.
+        const { currentBlockNum, blockTimeSeconds } =
+          await getNetworkBlockParams();
+
+        // Calculate total seconds difference from NOW
+        const diffSeconds = Math.floor((targetTimeMs - currentTimeMs) / 1000);
+        const diffBlocks = Math.floor(diffSeconds / blockTimeSeconds);
+
+        const calculatedBlock = currentBlockNum + diffBlocks;
+
+        // Prevent negative blocks
+        if (calculatedBlock < 0) {
+          showToast("不能早于创世区块", "error");
+          return;
+        }
+
+        // Set the block input
+        document.getElementById(blockInputId).value = calculatedBlock;
+        updateDateEst(blockInputId, estDisplayId);
+        showToast(`已推算区块高度: ${calculatedBlock}`, "success");
+      }
+
+      async function fillStartBlock() {
+        const { currentBlockNum } = await getNetworkBlockParams();
+        const startBlockInput = document.getElementById("new-start-block");
+        const endBlockInput = document.getElementById("new-end-block");
+
+        startBlockInput.value = currentBlockNum + 100;
+        endBlockInput.value = currentBlockNum + 5100;
+
+        updateDateEst("new-start-block", "start-est");
+        updateDateEst("new-end-block", "end-est");
+        showToast("已应用快捷区块设置", "success");
+      }
+    </script>
+    <!-- Wallet Selection Modal -->
+    <div
+      id="walletSelectModal"
+      class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none"
+    >
+      <div
+        class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto"
+        onclick="closeWalletModal()"
+      ></div>
+
+      <div
+        class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300"
+        id="walletModalContent"
+      >
+        <!-- Close Button -->
+        <button
+          onclick="closeWalletModal()"
+          class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+        >
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <h3
+          class="text-2xl font-impact tracking-widest text-white mb-2 text-center"
+        >
+          CONNECT <span class="text-bullish-green">WALLET</span>
+        </h3>
+        <p class="text-xs text-gray-400 font-terminal text-center mb-6">
+          SELECT YOUR PROVIDER TO INITIATE UPLINK
+        </p>
+
+        <div class="space-y-3">
+          <!-- MetaMask -->
+          <button
+            onclick="handleWalletSelection('metamask')"
+            class="w-full relative group"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+            ></div>
+            <div
+              class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1"
+            >
+              <div class="flex items-center gap-4">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"
+                  alt="MetaMask"
+                  class="w-8 h-8"
+                />
+                <span
+                  class="font-terminal font-bold text-gray-200 group-hover:text-white"
+                  >MetaMask</span
+                >
+              </div>
+              <i
+                class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"
+              ></i>
+            </div>
+          </button>
+
+          <!-- OKX Wallet -->
+          <button
+            onclick="handleWalletSelection('okx')"
+            class="w-full relative group"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+            ></div>
+            <div
+              class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-8 h-8 bg-black rounded-full border border-white flex items-center justify-center"
+                >
+                  <span class="text-white font-bold text-xs">OKX</span>
+                </div>
+                <span
+                  class="font-terminal font-bold text-gray-200 group-hover:text-white"
+                  >OKX Wallet</span
+                >
+              </div>
+              <i
+                class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"
+              ></i>
+            </div>
+          </button>
+
+          <!-- Coinbase Wallet -->
+          <button
+            onclick="handleWalletSelection('coinbase')"
+            class="w-full relative group"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+            ></div>
+            <div
+              class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center"
+                >
+                  <span class="text-white font-bold text-xs">CB</span>
+                </div>
+                <span
+                  class="font-terminal font-bold text-gray-200 group-hover:text-white"
+                  >Coinbase Wallet</span
+                >
+              </div>
+              <i
+                class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"
+              ></i>
+            </div>
+          </button>
+          <div class="text-center mt-4 pt-2 border-t border-gray-800">
+            <span class="text-[10px] text-gray-600 font-terminal block"
+              >// SECURE PROTOCOL V1.0 //</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div
+      id="walletDownloadModal"
+      class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none"
+    >
+      <div
+        class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto"
+        onclick="closeDownloadModal()"
+      ></div>
+
+      <div
+        class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300"
+        id="walletDownloadContent"
+      >
+        <button
+          onclick="closeDownloadModal()"
+          class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+        >
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <div class="text-center mb-6">
+          <i
+            class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"
+          ></i>
+          <h3 class="text-2xl font-impact tracking-widest text-white mb-2">
+            APP NOT <span class="text-desire-pink">FOUND</span>
+          </h3>
+          <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">
+            It looks like you don't have this Wallet App installed on your
+            device.
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <a
+            id="downloadModalBtn"
+            href="#"
+            target="_blank"
+            class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button"
+          >
+            DOWNLOAD APP
+          </a>
+          <button
+            onclick="
+              closeDownloadModal();
+              openWalletModal();
+            "
+            class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors"
+          >
+            CHOOSE ANOTHER WALLET
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+name: Deploy Plot18 to EC2
+
+on:
+  push:
+    branches:
+      - main  # 只有推送到 main 分支时才触发自动化
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 3.1.20.183
+          username: ubuntu
+          # 确保你在 GitHub Secrets 里存的名字叫 SERVER_SSH_KEY
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            # 1. 进入项目目录（根据你的描述修正）
+            cd /home/ubuntu/html/plot18
+            
+            # 2. 强制拉取 GitHub 最新代码
+            # 使用 fetch 和 reset 可以防止服务器上有手动改动导致冲突
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # 3. 顺便重载 Nginx（推荐取消注释）
+            sudo systemctl reload nginx

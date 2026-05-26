@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建新项目 | Plot18 Launchpad</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="shortcut icon" href="https://plot18.com/plot18.ico" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/abis.js"></script>
+    <script src="../js/ui_components.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/web3_integration.js"></script>
+
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bullish-green': '#00FF41',
+                        'desire-pink': '#FF00FF',
+                        'dark-gray': '#111111',
+                    },
+                    fontFamily: {
+                        'impact': ['Anton', 'sans-serif'],
+                        'terminal': ['JetBrains Mono', 'monospace'],
+                        'body': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #e5e5e5;
+        }
+
+        /* CRT Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .cyber-input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            border-color: #00FF41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .btn-standard {
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #00FF41;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+        }
+
+        /* Toast Container */
+        #toast-container {
+            position: fixed;
+            top: 24px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        
+        /* Section Header */
+        .section-label {
+            display: inline-block;
+            background: #111;
+            color: #00FF41;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 4px 10px;
+            margin-bottom: 8px;
+            border: 1px solid #333;
+        }
+
+        /* Modal Active States */
+        #walletSelectModal.active #walletModalContent,
+        #walletDownloadModal.active #walletDownloadContent {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+    </style>
+</head>
+
+<body class="font-body antialiased">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-40 bg-black/90 border-b border-gray-800 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="w-1.5 h-8 bg-bullish-green"></div>
+                    <span class="text-white text-3xl font-impact tracking-widest">plot 18</span>
+                </a>
+
+                <div class="flex items-center">
+                    <button id="connectWalletBtn" onclick="openWalletModal()"
+                        class="text-bullish-green border border-bullish-green hover:bg-bullish-green hover:text-black px-6 py-2 font-terminal text-xs font-bold transition-all rounded-sm">
+                        [ 连接钱包 ]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast -->
+    <div id="toast-container"></div>
+
+    <section class="min-h-screen pt-24 pb-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="border-l-4 border-bullish-green pl-6 mb-8">
+                <div class="text-bullish-green font-terminal text-sm uppercase mb-1">>> ADMIN_ACCESS.EXE</div>
+                <h1 class="text-3xl md:text-4xl font-impact text-white uppercase tracking-wide">初始化新项目 <span
+                        class="text-bullish-green">(INIT PROJECT)</span></h1>
+            </div>
+
+            <div class="bg-dark-gray border border-gray-800 p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
+                <!-- Decoration -->
+                <div
+                    class="absolute top-0 right-0 p-2 text-xs font-mono text-gray-600 border-l border-b border-gray-800 bg-black">
+                    SYS.RW</div>
+
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-x-6 gap-y-6">
+
+                    <!-- Group 1: Asset Config -->
+                    <div class="md:col-span-6 border-b border-gray-800 pb-2 mb-2">
+                         <div class="section-label">核心资产配置 (ASSETS)</div>
+                    </div>
+                    
+                    <div class="md:col-span-3">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">预售代币地址 (Presale Token)</label>
+                        <input type="text" id="cp-presale-token" class="cyber-input" placeholder="0x...">
+                        <div class="text-xs text-gray-300 font-mono mt-[-10px]">您想要出售的代币合约地址</div>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">募集资产地址 (Base Token)</label>
+                        <input type="text" id="cp-base-token" class="cyber-input" placeholder="0x...">
+                        <div class="text-xs text-gray-300 font-mono mt-[-10px]">用户支付的代币 (通常为USDT)</div>
+                    </div>
+
+
+                    <!-- Group 2: Economics -->
+                    <div class="md:col-span-6 border-b border-gray-800 pb-2 mb-2 mt-2">
+                         <div class="section-label">经济模型 (ECONOMICS)</div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">预售总量 (Total Amount)</label>
+                        <input type="number" id="cp-amount" class="cyber-input" placeholder="例如: 1000000">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">预售代币单价 (Price per Token)</label>
+                        <input type="number" step="any" id="cp-rate" class="cyber-input" placeholder="例如: 0.007">
+                        <div class="text-xs text-bullish-green font-mono mt-[-10px] mb-2">每个预售代币的价格 (1 Presale = ? Base Token)</div>
+                    </div>
+                    
+                     <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">安全风控：系统单笔最低底线 (Min Buy Floor)</label>
+                        <input type="number" id="cp-min-hold" class="cyber-input" placeholder="填0代表不设底线" value="0">
+                         <div class="text-xs text-gray-300 font-mono mt-[-10px] mb-2 leading-relaxed">
+                            <span class="text-desire-pink font-bold">⚠️ 安全参数：</span>新项目散户起步门槛固定为 1000 币。<br>未来后台调低起步门槛时，设置的数值【绝对不能低于】您现在填写的底线。
+                         </div>
+                    </div>
+
+
+                    <!-- Group 3: Timeline & Admin -->
+                    <div class="md:col-span-6 border-b border-gray-800 pb-2 mb-2 mt-2">
+                         <div class="section-label">时间周期及权限 (TIMELINE & ADMIN)</div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">开始区块 (Start Block) 
+                            <span id="current-block-display" class="text-bullish-green ml-2">Loading...</span>
+                        </label>
+                        <input type="number" id="cp-start-block" class="cyber-input mb-2" placeholder="当前区块 + N" oninput="updateDateEst('cp-start-block', 'start-est')">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs text-gray-300 whitespace-nowrap">按日期预估:</span>
+                            <div class="flex bg-black border border-gray-800 rounded-sm w-full focus-within:border-bullish-green overflow-hidden">
+                                <input type="datetime-local" id="cp-start-date" max="9999-12-31T23:59" class="bg-transparent text-gray-300 text-xs p-1 flex-grow outline-none border-none">
+                                <button onclick="calculateBlockFromDate('cp-start-date', 'cp-start-block', 'start-est')" class="bg-gray-800 hover:bg-bullish-green hover:text-black text-white text-xs px-2 font-bold transition-colors">应用</button>
+                            </div>
+                        </div>
+                        <div id="start-est" class="text-xs text-bullish-green font-mono min-h-[15px]"></div>
+                        
+                         <button onclick="fillStartBlock()"
+                            class="text-xs text-gray-300 hover:text-white underline mt-1">
+                            [快捷设置: 预售100块后开始, 持续5000块]
+                        </button>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">结束区块 (End Block)</label>
+                        <input type="number" id="cp-end-block" class="cyber-input mb-2" placeholder="开始区块 + 周期" oninput="updateDateEst('cp-end-block', 'end-est')">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs text-gray-300 whitespace-nowrap">按日期预估:</span>
+                            <div class="flex bg-black border border-gray-800 rounded-sm w-full focus-within:border-bullish-green overflow-hidden">
+                                <input type="datetime-local" id="cp-end-date" max="9999-12-31T23:59" class="bg-transparent text-gray-300 text-xs p-1 flex-grow outline-none border-none">
+                                <button onclick="calculateBlockFromDate('cp-end-date', 'cp-end-block', 'end-est')" class="bg-gray-800 hover:bg-bullish-green hover:text-black text-white text-xs px-2 font-bold transition-colors">应用</button>
+                            </div>
+                        </div>
+                         <div id="end-est" class="text-xs text-bullish-green font-mono min-h-[15px]"></div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-400 text-sm font-terminal uppercase mb-2">管理员地址 (Admin Address)</label>
+                        <input type="text" id="cp-admin" class="cyber-input" placeholder="0x..." value="">
+                         <div class="text-xs text-gray-300 font-mono mt-[-10px]">控制暂停和资金的权限地址</div>
+                    </div>
+
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-800">
+                    <button id="btn-create-project" onclick="createProjectFromUI()"
+                        class="w-full btn-standard btn-primary py-4 font-bold text-lg hover:shadow-[0_0_30px_rgba(0,255,65,0.4)]">
+                        <i class="fa-solid fa-rocket mr-3"></i> 部署项目 (DEPLOY)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script>
+        // Global variables provider, signer, userAddress are defined in web3_integration.js
+        // connectWallet() is now global in web3_integration.js
+
+        // Helper for Create Page specific logic
+        async function fillStartBlock() {
+            if (!provider) {
+                showToast("请先连接钱包", "error");
+                if (typeof openWalletModal === 'function') openWalletModal();
+                return;
+            }
+            try {
+                const block = await provider.getBlockNumber();
+                document.getElementById('cp-start-block').value = block + 100;
+                document.getElementById('cp-end-block').value = block + 100 + 5000;
+
+                // Trigger Updates
+                updateDateEst('cp-start-block', 'start-est');
+                updateDateEst('cp-end-block', 'end-est');
+
+                // Auto-fill admin if empty
+                const adminInput = document.getElementById('cp-admin');
+                if (userAddress && !adminInput.value) {
+                    adminInput.value = userAddress;
+                }
+
+                document.getElementById('current-block-display').innerText = `[当前: ${block}]`;
+            } catch (e) {
+                console.error("Error fetching block", e);
+            }
+        }
+        
+        // Date Estimator
+        let cachedCurrentBlock = 0;
+        
+        async function updateDateEst(inputId, outputId) {
+            const val = parseInt(document.getElementById(inputId).value);
+            const out = document.getElementById(outputId);
+            
+            if (!val || val <= 0) {
+                out.innerText = "";
+                return;
+            }
+            
+            if (cachedCurrentBlock === 0 && provider) {
+                try { cachedCurrentBlock = await provider.getBlockNumber(); } catch {}
+            }
+            
+            // Assume 3s per block for BSC
+            if (cachedCurrentBlock > 0) {
+                const diff = val - cachedCurrentBlock;
+                if (diff < 0) {
+                    out.innerText = "⚠️ 过去的区块 (Past Block)";
+                    out.className = "text-[10px] text-red-500 font-mono min-h-[15px]";
+                    return;
+                }
+                
+                const seconds = diff * 3;
+                const date = new Date(Date.now() + seconds * 1000);
+                
+                // Format: YYYY-MM-DD HH:mm
+                const formatted = date.toLocaleString('zh-CN', { hour12: false });
+                
+                // Show "Approx: Date (in X hours)"
+                const hours = (seconds / 3600).toFixed(1);
+                out.innerText = `≈ ${formatted} (${hours}小时后)`;
+                out.className = "text-[10px] text-bullish-green font-mono min-h-[15px]";
+            }
+        }
+
+        async function calculateBlockFromDate(dateInputId, blockInputId, outputId) {
+            const dateStr = document.getElementById(dateInputId).value;
+            if (!dateStr) return;
+
+            const targetTimeMs = new Date(dateStr).getTime();
+            const currentTimeMs = Date.now();
+
+            if (targetTimeMs <= currentTimeMs) {
+                showToast("所选时间必须在未来", "error");
+                return;
+            }
+
+            if (cachedCurrentBlock === 0 && provider) {
+                try { cachedCurrentBlock = await provider.getBlockNumber(); } catch {}
+            }
+
+            if (cachedCurrentBlock > 0) {
+                const diffSeconds = (targetTimeMs - currentTimeMs) / 1000;
+                // Assume 3s per block for BSC
+                const blocksNeeded = Math.floor(diffSeconds / 3);
+                const targetBlock = cachedCurrentBlock + blocksNeeded;
+
+                document.getElementById(blockInputId).value = targetBlock;
+                updateDateEst(blockInputId, outputId);
+            } else {
+                showToast("无法获取当前区块，请刷新或连接钱包", "error");
+            }
+        }
+
+        // Hook into loading to set initial state if connected
+        window.addEventListener('load', async () => {
+            // giving time for web3_integration to init
+            setTimeout(async () => {
+                if (provider) {
+                    try {
+                        const block = await provider.getBlockNumber();
+                        cachedCurrentBlock = block;
+                        document.getElementById('current-block-display').innerText = `[当前: ${block}]`;
+                        if (userAddress) document.getElementById('cp-admin').value = userAddress;
+                    } catch (e) { console.warn("Init block fetch fail", e)}
+                }
+            }, 1000);
+        });
+
+    </script>
+    <!-- Wallet Selection Modal -->
+    <div id="walletSelectModal" class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeWalletModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletModalContent">
+            <!-- Close Button -->
+            <button onclick="closeWalletModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-impact tracking-widest text-white mb-2 text-center">CONNECT <span class="text-bullish-green">WALLET</span></h3>
+            <p class="text-xs text-gray-400 font-terminal text-center mb-6">SELECT YOUR PROVIDER TO INITIATE UPLINK</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <button onclick="handleWalletSelection('metamask')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/metamask.png" alt="MetaMask" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">MetaMask</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- OKX Wallet -->
+                <button onclick="handleWalletSelection('okx')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/okx.png" alt="OKX" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">OKX Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- TokenPocket -->
+                <button onclick="handleWalletSelection('tokenpocket')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/tokenpocket.png" alt="TokenPocket" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">TokenPocket</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Coinbase Wallet -->
+                <button onclick="handleWalletSelection('coinbase')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/coinbase.png" alt="Coinbase" class="w-8 h-8 object-contain rounded-full">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Coinbase Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Trust Wallet -->
+                <button onclick="handleWalletSelection('trustwallet')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/trustwallet.png" alt="Trust Wallet" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Trust Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-400 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- SafePal -->
+                <button onclick="handleWalletSelection('safepal')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-gray-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="../images/wallets/safepal.png" alt="SafePal" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">SafePal</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-gray-400 text-sm"></i>
+                    </div>
+                </button>
+                <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                   <span class="text-[10px] text-gray-600 font-terminal block">// SECURE PROTOCOL V1.0 //</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div id="walletDownloadModal" class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeDownloadModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletDownloadContent">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"></i>
+                <h3 class="text-2xl font-impact tracking-widest text-white mb-2">APP NOT <span class="text-desire-pink">FOUND</span></h3>
+                <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">It looks like you don't have this Wallet App installed on your device.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="downloadModalBtn" href="#" target="_blank" class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button">
+                    DOWNLOAD APP
+                </a>
+                <button onclick="closeDownloadModal(); openWalletModal();" class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors">
+                    CHOOSE ANOTHER WALLET
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

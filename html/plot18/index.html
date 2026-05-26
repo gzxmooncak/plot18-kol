@@ -1,0 +1,2796 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <!-- OpenGraph / Social Meta Tags -->
+    <meta property="og:title" content="Plot18 | Invest in Cinema. Own the Copyright.">
+    <meta property="og:description" content="The first Film RWA Launchpad. Invest in movie copyrights, earn box office yields, and trade IP tokens.">
+    <meta property="og:image" content="https://plot18.com/images/og-preview.jpg">
+    <meta property="og:url" content="https://plot18.com">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>plot 18 | Invest in Cinema. Own the Copyright.</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="shortcut icon" href="plot18.ico" type="image/x-icon">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="js/tracker.js"></script>
+    <script src="js/toast.js"></script>
+    <!-- KOL Tracking Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="js/tracker.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/abis.js"></script>
+    <script src="js/ui_components.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/web3_integration.js"></script>
+    <style>
+        :root {
+            --mobile-bottom-nav-height: calc(68px + env(safe-area-inset-bottom, 0px));
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <script>
+        // Web3 Integration handles wallet logic. 
+        // Index specific logic is minimized.
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bullish-green': '#00FF41',    /* Hacker/Crypto Up Green */
+                        'desire-pink': '#FF00FF',      /* Cyber/Neon Pink */
+                        'pure-black': '#000000',       /* OLED Black */
+                        'dark-gray': '#111111',        /* Panel BG */
+                        'grid-line': '#222222',        /* Grid Lines */
+                        'vision-blue': '#4F46E5',      /* Vision Section Accent */
+                    },
+                    fontFamily: {
+                        'impact': ['Anton', 'sans-serif'],
+                        'terminal': ['JetBrains Mono', 'monospace'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'grid-pattern': 'linear-gradient(to right, #1a1a1a 1px, transparent 1px), linear-gradient(to bottom, #1a1a1a 1px, transparent 1px)',
+                        'cyber-grid': 'radial-gradient(circle at center, rgba(79, 70, 229, 0.1) 0%, transparent 70%), linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent)',
+                    },
+                    animation: {
+                        'ticker': 'ticker 20s linear infinite',
+                        'glitch': 'glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite',
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'gradient-x': 'gradientX 5s ease infinite',
+                        'bg-pulse': 'bgPulse 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        ticker: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-100%)' }
+                        },
+                        glitch: {
+                            '0%': { transform: 'translate(0)' },
+                            '20%': { transform: 'translate(-2px, 2px)' },
+                            '40%': { transform: 'translate(-2px, -2px)' },
+                            '60%': { transform: 'translate(2px, 2px)' },
+                            '80%': { transform: 'translate(2px, -2px)' },
+                            '100%': { transform: 'translate(0)' }
+                        },
+                        scanline: {
+                            '0%': { top: '-100%' },
+                            '100%': { top: '200%' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 10px rgba(79, 70, 229, 0.5)' },
+                            '100%': { boxShadow: '0 0 25px rgba(79, 70, 229, 0.8), 0 0 10px rgba(0, 255, 65, 0.3)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        gradientX: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' }
+                        },
+                        bgPulse: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.7' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #e5e5e5;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* 1. Global CRT Scanline & Noise */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* 2. Mouse Follow Spotlight */
+        #spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(800px circle at var(--x) var(--y), rgba(79, 70, 229, 0.08), transparent 40%);
+        }
+
+        /* 4. Matrix Rain Canvas */
+        #matrix-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        /* Cyberpunk Panels */
+        .cyber-panel {
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid #333;
+            position: relative;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #00FF41;
+            border-left: 2px solid #00FF41;
+            transition: all 0.3s;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #00FF41;
+            border-right: 2px solid #00FF41;
+            transition: all 0.3s;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel:hover {
+            border-color: #00FF41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+        }
+
+        /* Pink Variant */
+        .cyber-panel-pink {
+            border-color: #333;
+            background: rgba(10, 10, 10, 0.85);
+            position: relative;
+            z-index: 10;
+        }
+
+        .cyber-panel-pink::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #FF00FF;
+            border-left: 2px solid #FF00FF;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel-pink::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #FF00FF;
+            border-right: 2px solid #FF00FF;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .cyber-panel-pink:hover {
+            border-color: #FF00FF;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);
+        }
+
+        /* Glitch Text Effect */
+        .glitch-header {
+            position: relative;
+            color: #fff;
+            z-index: 20;
+        }
+
+        .glitch-header::before,
+        .glitch-header::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .glitch-header::before {
+            left: 2px;
+            text-shadow: -2px 0 #FF00FF;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+            opacity: 0.7;
+        }
+
+        .glitch-header::after {
+            left: -2px;
+            text-shadow: -2px 0 #00FF41;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+            opacity: 0.7;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                clip: rect(10px, 9999px, 30px, 0);
+            }
+
+            20% {
+                clip: rect(80px, 9999px, 100px, 0);
+            }
+
+            40% {
+                clip: rect(40px, 9999px, 60px, 0);
+            }
+
+            60% {
+                clip: rect(120px, 9999px, 140px, 0);
+            }
+
+            80% {
+                clip: rect(20px, 9999px, 60px, 0);
+            }
+
+            100% {
+                clip: rect(90px, 9999px, 110px, 0);
+            }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% {
+                clip: rect(60px, 9999px, 80px, 0);
+            }
+
+            20% {
+                clip: rect(10px, 9999px, 30px, 0);
+            }
+
+            40% {
+                clip: rect(100px, 9999px, 120px, 0);
+            }
+
+            60% {
+                clip: rect(20px, 9999px, 40px, 0);
+            }
+
+            80% {
+                clip: rect(80px, 9999px, 100px, 0);
+            }
+
+            100% {
+                clip: rect(30px, 9999px, 50px, 0);
+            }
+        }
+
+        /* 5. Glitch Buttons - Standardized with Solid Backgrounds */
+        .btn-standard {
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            border: none;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+            /* Sharper angles */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 30;
+            pointer-events: auto;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background-color: #00FF41;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* Solid Pink Button for Whitepaper */
+        .btn-secondary-pink-solid {
+            background-color: #FF00FF;
+            color: #000;
+        }
+
+        .btn-secondary-pink-solid:hover {
+            background-color: #fff;
+            color: #FF00FF;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* Solid White/Grey Button for Kickstarter */
+        .btn-secondary-white-solid {
+            background-color: #e5e5e5;
+            color: #000;
+        }
+
+        .btn-secondary-white-solid:hover {
+            background-color: #fff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 120px;
+            max-height: 150px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+            border-left: 1px solid #222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border: 1px solid #00FF41;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00FF41;
+        }
+
+        /* Ticker Tape */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #00FF41;
+            border-bottom: 2px solid #000;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: ticker 40s linear infinite;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 4rem;
+            color: #000;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Side Navigation */
+        .side-nav {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 50;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 1px solid #333;
+            backdrop-filter: blur(10px);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .side-nav-item {
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .side-nav-item:hover {
+            color: #00FF41;
+            transform: translateX(-5px);
+        }
+
+        .side-nav-item i {
+            font-size: 1.25rem;
+        }
+
+        /* Tooltip for side nav */
+        .side-nav-item::before {
+            content: attr(data-label);
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            background: #000;
+            border: 1px solid #00FF41;
+            color: #00FF41;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+
+        .side-nav-item:hover::before {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* Whitelist Faction Selection */
+        .faction-card {
+            border: 1px solid #333;
+            background: #111;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .faction-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .faction-card.selected {
+            background: #1a1a1a;
+        }
+
+        .faction-card.guardian.selected {
+            border-color: #3B82F6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .faction-card.guardian.selected i {
+            color: #3B82F6;
+        }
+
+        .faction-card.plunderer.selected {
+            border-color: #EF4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .faction-card.plunderer.selected i {
+            color: #EF4444;
+        }
+
+        /* Mobile Menu */
+        #mobile-menu {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+            position: absolute;
+            width: 100%;
+            z-index: 45;
+            /* Lower than nav but above content */
+            top: 100%;
+            /* Position below navbar */
+        }
+
+        #mobile-menu.hidden {
+            display: none;
+        }
+
+        #mobile-menu:not(.hidden) {
+            display: block;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Active Nav Link Highlight */
+        .nav-link.active,
+        .nav-link-mobile.active {
+            color: #00FF41;
+            /* Bullish Green */
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+        }
+
+        @media (min-width: 768px) {
+            .nav-link.active {
+                border-bottom: 2px solid #00FF41;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .nav-link-mobile.active {
+                border-left: 3px solid #00FF41;
+                background: rgba(0, 255, 65, 0.05);
+            }
+        }
+
+        /* Modal Active States */
+        #walletSelectModal.active #walletModalContent,
+        #walletDownloadModal.active #walletDownloadContent {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+
+        /* Custom Carousel Transition Styles */
+        .muse-card {
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* Bouncy spring transition */
+            position: absolute;
+            width: 340px;
+            /* Base width */
+            top: 50%;
+            transform-origin: center center;
+            opacity: 0.3;
+            z-index: 10;
+            filter: grayscale(100%) brightness(0.4) contrast(1.2);
+            pointer-events: none;
+            /* Inactive not clickable */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* The two active cards in the middle */
+        .muse-card.active {
+            opacity: 1;
+            z-index: 50;
+            filter: grayscale(0%) brightness(1) contrast(1);
+            pointer-events: auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Carousel Dot Indicators */
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #444;
+            border-radius: 50%;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .carousel-dot.active {
+            background-color: #00FF41;
+            transform: scale(1.5);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+        }
+
+        /* Vision Section Specifics */
+        .vision-text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+    </style>
+</head>
+
+<body class="font-body antialiased selection:bg-bullish-green selection:text-black text-gray-200 pb-[var(--mobile-bottom-nav-height)] md:pb-0" id="top">
+
+    <div id="spotlight"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-24 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="side-nav hidden md:flex">
+        <a href="#flagship" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="HOME"><i class="fa-solid fa-house"></i></a>
+        <a href="#hero" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="GENESIS"><i class="fa-solid fa-dog"></i></a>
+        <a href="#tokenomics" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="TOKENOMICS"><i class="fa-solid fa-coins"></i></a>
+        <a href="#assets" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="MUSES"><i class="fa-solid fa-users-viewfinder"></i></a>
+        <a href="#team" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="TEAM"><i class="fa-solid fa-people-group"></i></a>
+        <a href="#faq" class="side-nav-item text-gray-400 hover:text-white transition-colors" data-label="FAQ"><i class="fa-solid fa-circle-question"></i></a>
+        <a href="https://t.me/plot18app" target="_blank" class="side-nav-item !text-[#0088cc]" data-label="OFFICIAL" title="Official Account" style="text-shadow: 0 0 10px rgba(0,136,204,0.8);"><i class="fa-brands fa-telegram"></i></a>
+        <a href="https://t.me/plot18_com" target="_blank" class="side-nav-item !text-bullish-green" data-label="SUPPORT" title="Support & Service" style="text-shadow: 0 0 10px rgba(0,255,65,0.8);"><i class="fa-brands fa-telegram"></i></a>
+    </div>
+
+    <div class="fixed top-0 w-full z-50 ticker-wrap shadow-[0_0_20px_rgba(0,255,65,0.4)]">
+        <div class="ticker">
+            <div class="ticker-item">// THE FUTURE OF CINEMA IS DECENTRALIZED //</div>
+            <div class="ticker-item">AESTHETIC PROTOCOL ONLINE</div>
+            <div class="ticker-item">NEURAL LINK <i class="fa-solid fa-wifi"></i> STABLE</div>
+            <div class="ticker-item">CYBERPUNK VISIONS <i class="fa-solid fa-eye"></i> LOADED</div>
+            <div class="ticker-item">MUSE FREQUENCY <i class="fa-solid fa-bolt"></i> OPTIMAL</div>
+            <div class="ticker-item">RWA YIELD GENERATION: ACTIVE</div>
+            <div class="ticker-item">NEW SYNTHETIC ASSETS MINTING...</div>
+            <div class="ticker-item">ENTER THE PLOT18 METAVERSE</div>
+            <!-- Duplicate for seamless loop -->
+            <div class="ticker-item">// THE FUTURE OF CINEMA IS DECENTRALIZED //</div>
+            <div class="ticker-item">AESTHETIC PROTOCOL ONLINE</div>
+            <div class="ticker-item">NEURAL LINK <i class="fa-solid fa-wifi"></i> STABLE</div>
+            <div class="ticker-item">CYBERPUNK VISIONS <i class="fa-solid fa-eye"></i> LOADED</div>
+            <div class="ticker-item">MUSE FREQUENCY <i class="fa-solid fa-bolt"></i> OPTIMAL</div>
+            <div class="ticker-item">RWA YIELD GENERATION: ACTIVE</div>
+            <div class="ticker-item">NEW SYNTHETIC ASSETS MINTING...</div>
+            <div class="ticker-item">ENTER THE PLOT18 METAVERSE</div>
+        </div>
+    </div>
+
+    <nav class="fixed top-8 w-full z-40 bg-black/80 border-b border-gray-800 backdrop-blur-md transition-all duration-300"
+        id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0 flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div
+                        class="w-1.5 h-8 bg-bullish-green group-hover:bg-desire-pink transition-colors shadow-[0_0_10px_#00FF41] group-hover:shadow-[0_0_10px_#FF00FF]">
+                    </div>
+                    <span class="text-white text-3xl font-impact tracking-widest vision-text-glow">plot 18</span>
+                </div>
+
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8">
+                        <a href="#flagship"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors"
+                            data-target="flagship">HOME</a>
+                        <a href="#hero"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors"
+                            data-target="hero">GENESIS</a>
+                        <a href="#tokenomics"
+                            class="nav-link text-gray-400 hover:text-bullish-green font-terminal text-sm font-bold transition-colors"
+                            data-target="tokenomics">TOKENOMICS</a>
+                        <a href="#assets"
+                            class="nav-link text-gray-400 hover:text-desire-pink font-terminal text-sm font-bold transition-colors"
+                            data-target="assets">MUSE_ASSETS</a>
+                        <a href="#team"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors"
+                            data-target="team">TEAM</a>
+                        <a href="#faq"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors"
+                            data-target="faq">FAQ</a>
+                        <a href="invest.html"
+                            class="nav-link text-bullish-green hover:text-white font-terminal text-sm font-bold transition-colors border border-bullish-green/30 px-3 py-1 rounded bg-bullish-green/10 hover:bg-bullish-green/20">LAUNCHPAD</a>
+                        <a href="my-dividends.html"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors"
+                            data-target="dividends">DIVIDENDS</a>
+                        <a href="whitepaper.html"
+                            class="nav-link text-gray-400 hover:text-white font-terminal text-sm font-bold transition-colors">WHITEPAPER</a>
+
+                        <!-- Block Height Display -->
+                        <div id="blockHeightDisplay"
+                            class="hidden md:flex items-center gap-2 font-terminal text-[10px] text-gray-500 border border-gray-800 px-3 py-2 bg-black/50 mr-4">
+                            <span class="text-bullish-green animate-pulse">●</span> BLOCK: <span id="currentBlockNum"
+                                class="text-white">...</span>
+                        </div>
+
+                        <!-- Consolidated Web3 Button -->
+                        <div class="flex items-center gap-2">
+                            <button id="connectWalletBtn" onclick="openWalletModal()"
+                                class="text-bullish-green border border-bullish-green hover:bg-bullish-green hover:text-black px-6 py-2 font-terminal text-xs font-bold transition-all shadow-[0_0_10px_rgba(0,255,65,0.2)] hover:shadow-[0_0_20px_rgba(0,255,65,0.6)] rounded-sm whitespace-nowrap min-w-[160px] flex items-center justify-center">
+                                [ Connect_Wallet ]
+                            </button>
+                            <button id="disconnectBtn" onclick="disconnectWallet()"
+                                class="hidden text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white px-3 py-2 font-terminal text-xs font-bold transition-all rounded-sm">
+                                <i class="fa-solid fa-power-off"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:hidden flex items-center gap-3">
+                    <!-- Connect Wallet button for mobile top bar (matches PC style) -->
+                    <button id="connectWalletBtnMobileNav" onclick="openWalletModal()"
+                        class="text-bullish-green border border-bullish-green px-4 h-9 flex items-center justify-center rounded-sm transition-all hover:bg-bullish-green hover:text-black font-terminal text-xs font-bold whitespace-nowrap tracking-wider">
+                        [ Connect_Wallet ]
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- The old mobile-menu dropdown is removed entirely since we use bottom nav now -->
+    </nav>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-black/95 backdrop-blur-xl border-t border-bullish-green/30" style="padding-bottom: env(safe-area-inset-bottom);">
+        <div class="flex justify-around items-center h-[68px] px-2 font-terminal">
+            <a href="#flagship" class="flex flex-col items-center justify-center w-1/4 h-full text-bullish-green hover:text-white transition-colors nav-link-mobile" data-target="flagship">
+                <i class="fa-solid fa-house text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">HOME</span>
+            </a>
+            <a href="invest.html" class="flex flex-col items-center justify-center w-1/4 h-full text-desire-pink hover:text-white transition-colors relative animate-pulse shadow-[0_0_15px_rgba(255,0,255,0.3)]">
+                <i class="fa-solid fa-rocket text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">LAUNCH</span>
+            </a>
+            <a href="my-dividends.html" class="flex flex-col items-center justify-center w-1/4 h-full text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-gem text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">REWARDS</span>
+            </a>
+            <div class="relative flex flex-col items-center justify-center w-1/4 h-full text-gray-400 hover:text-white transition-colors cursor-pointer" onclick="toggleMobileDocsMenu(event)">
+                <i class="fa-solid fa-book-open text-xl mb-1.5"></i>
+                <span class="text-[9px] font-bold tracking-widest">DOCS</span>
+                
+                <!-- Micro Popup Menu for Docs -->
+                <div id="mobileDocsMenu" class="absolute bottom-[80px] right-2 w-48 bg-black/95 border border-bullish-green/30 rounded-md shadow-[0_0_20px_rgba(0,255,65,0.15)] backdrop-blur-xl hidden flex-col overflow-hidden transition-all duration-200 z-[60]">
+                    <a href="whitepaper.html" class="px-4 py-4 text-xs text-gray-300 hover:text-white hover:bg-white/5 border-b border-gray-800 flex items-center justify-between font-bold tracking-wide">
+                        <span>PLOT18 PROTOCOL</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-bullish-green"></i>
+                    </a>
+                    <a href="momo_whitepaper.html" class="px-4 py-4 text-xs text-gray-300 hover:text-white hover:bg-white/5 flex items-center justify-between font-bold tracking-wide">
+                        <span>MOMO PROJECT</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-bullish-green"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="flagship" class="py-0 bg-dark-gray relative border-t border-bullish-green" data-nav-target="flagship">
+        <!-- Slider Wrapper -->
+        <div class="relative group/slider w-full">
+            <!-- Track -->
+            <div id="flagship-slider" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth">
+                
+                <!-- Clone of Slide 2 (STUDIO ZERO) for infinite loop (prepended) -->
+                <div class="min-w-full snap-center w-full flex-shrink-0 clone-slide" data-title="STUDIO ZERO">
+                    <div class="w-full relative h-[100vh] bg-black group overflow-hidden flagship-visual">
+                        <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 hidden md:block pointer-events-none"
+                            style="background-image: url('images/zero.jpg');">
+                        </div>
+                        <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 md:hidden pointer-events-none"
+                            style="background-image: url('images/zero_mobile.jpg');">
+                        </div>
+        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 pointer-events-none">
+                        </div>
+        
+                        <div
+                            class="absolute w-full h-2 bg-bullish-green/30 top-[-100%] animate-scanline blur-sm pointer-events-none">
+                        </div>
+        
+                        <div class="absolute inset-x-0 bottom-[calc(3rem+var(--mobile-bottom-nav-height))] md:bottom-16 flex items-end justify-center">
+                            <div class="flex flex-col md:flex-row gap-4 pb-4 md:pb-6 lg:pb-8">
+                                <a href="invest.html#studio-zero" class="btn-standard btn-primary px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(0,255,65,0.4)] hover:shadow-[0_0_25px_rgba(0,255,65,0.8)] hover:scale-105 transition-transform text-center">
+                                    ENTER LAUNCHPAD <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </a>
+                                <button onclick="openFlagshipDetails(1)" class="btn-standard bg-desire-pink hover:opacity-90 text-black px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,0,255,0.4)] hover:shadow-[0_0_25px_rgba(255,0,255,0.8)] hover:scale-105 transition-transform text-center">
+                                    DETAILS
+                                </button>
+                                <a href="momo_whitepaper.html" class="btn-standard bg-gray-800 hover:bg-white hover:text-black text-white px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)] hover:scale-105 transition-all text-center">
+                                    READ $MOMO WHITEPAPER
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 0: Revolutionizing Entertainment -->
+                <div class="min-w-full snap-center w-full flex-shrink-0 real-slide" data-title="REVOLUTION">
+                    <div class="w-full relative h-[100vh] flagship-visual overflow-hidden flex items-center justify-center bg-[#050508]">
+                        <!-- Background layers from vision -->
+                        <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen pointer-events-none"
+                            style="background-image: url('images/index.jpg'); filter: contrast(1.2) brightness(0.8);"></div>
+
+                        <div
+                            class="absolute inset-0 bg-[linear-gradient(rgba(0,255,65,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none">
+                        </div>
+
+                        <div class="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-bullish-green/20 rounded-full blur-[100px] animate-pulse mix-blend-screen pointer-events-none"
+                            style="animation-duration: 4s;"></div>
+                        <div class="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-desire-pink/20 rounded-full blur-[120px] animate-pulse mix-blend-screen pointer-events-none"
+                            style="animation-duration: 6s; animation-delay: 1s;"></div>
+
+                        <div class="absolute inset-0 pointer-events-none"
+                            style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; animation: float 10s linear infinite;">
+                        </div>
+
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none">
+                        </div>
+
+                        <!-- Content -->
+                        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full flex flex-col items-center justify-center h-full pt-16 md:pt-24">
+                            <div class="mb-4 md:mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">
+                                <div
+                                    class="inline-flex items-center gap-2 md:gap-3 border border-bullish-green/30 bg-black/60 px-4 md:px-6 py-1.5 md:py-2 rounded-full backdrop-blur-md shadow-[0_0_15px_rgba(0,255,65,0.2)]">
+                                    <span class="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-bullish-green animate-ping"></span>
+                                    <span class="text-white font-terminal text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.25em] uppercase font-bold text-shadow">The
+                                        Revolution of Entertainment</span>
+                                </div>
+                            </div>
+
+                            <h1 class="font-impact text-white mb-4 md:mb-8 tracking-tighter uppercase drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] animate-fade-in-up flex flex-col items-center justify-center w-full"
+                                style="animation-delay: 0.4s;">
+                                <span class="w-full text-center block text-[13.5vw] sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] md:leading-[0.85]">REVOLUTIONIZING</span>
+                                <span class="w-full text-center block text-[13.5vw] sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] md:leading-[0.85]">ENTERTAINMENT</span>
+                                
+                                <span
+                                    class="text-transparent bg-clip-text bg-gradient-to-br from-[#00FF41] via-white to-[#FF00FF] animate-gradient-x drop-shadow-sm mt-3 sm:mt-4 text-center block w-full text-[11.5vw] sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] md:leading-[0.9]">
+                                    <span class="block">A NEW ERA FOR <br class="sm:hidden">FILM & TV</span>
+                                    <span class="block">POWERED BY <br class="sm:hidden">REAL-WORLD</span>
+                                    <span class="block">ASSETS (RWA)</span>
+                                </span>
+                            </h1>
+
+                            <p class="max-w-4xl mx-auto text-sm sm:text-xl md:text-2xl text-gray-300 font-body font-light leading-relaxed animate-fade-in-up tracking-wide px-4"
+                                style="animation-delay: 0.6s;">
+                                "Join Plot18. <strong class="text-white font-bold">Become a stakeholder in a digital film studio.</strong>"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 1: SPRINGS 88 -->
+                <div class="min-w-full snap-center w-full flex-shrink-0 real-slide" data-title="SPRINGS 88">
+                    <div class="w-full">
+            
+                        <div class="relative w-full h-[100vh] bg-black group overflow-hidden flagship-visual">
+                            <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 pointer-events-none"
+                                style="background-image: url('images/main.jpg');">
+                            </div>
+            
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 pointer-events-none">
+                            </div>
+            
+                            <div
+                                class="absolute w-full h-2 bg-bullish-green/30 top-[-100%] animate-scanline blur-sm pointer-events-none">
+                            </div>
+            
+                            <div class="absolute inset-x-0 bottom-[calc(3rem+var(--mobile-bottom-nav-height))] md:bottom-16 flex items-end justify-center">
+                                <div class="flex flex-col md:flex-row gap-4 pb-4 md:pb-6 lg:pb-8">
+                                    <a href="invest.html#springs-88" class="btn-standard btn-primary px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(0,255,65,0.4)] hover:shadow-[0_0_25px_rgba(0,255,65,0.8)] hover:scale-105 transition-transform text-center">
+                                        ENTER LAUNCHPAD <i class="fa-solid fa-arrow-right ml-2"></i>
+                                    </a>
+                                    <button onclick="openFlagshipDetails(0)" class="btn-standard bg-desire-pink hover:opacity-90 text-black px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,0,255,0.4)] hover:shadow-[0_0_25px_rgba(255,0,255,0.8)] hover:scale-105 transition-transform text-center">
+                                        DETAILS
+                                    </button>
+                                    <a href="whitepaper.html" class="btn-standard bg-gray-800 hover:bg-white hover:text-black text-white px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)] hover:scale-105 transition-all text-center">
+                                        READ $MM88 WHITEPAPER
+                                    </a>
+                                </div>
+                            </div>
+            
+                            <div class="absolute top-8 right-8 text-right hidden md:block">
+                                <div class="text-xs font-terminal text-bullish-green animate-pulse">REC ● [LOW_ANGLE_CAM]</div>
+                                <div class="text-xs font-terminal text-gray-500 mt-1">GLITCH FX: ON</div>
+                            </div>
+                        </div>
+            
+                        <!-- Mobile Static Nav -->
+                        <div class="hidden">
+                            <button class="text-bullish-green text-sm font-terminal" onclick="prevSlide()"><< PREV ASSET</button>
+                            <span class="text-gray-500 text-xs">1 / 2</span>
+                            <button class="text-bullish-green text-sm font-terminal" onclick="nextSlide()">NEXT ASSET >></button>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Slide 2: PROJECT BETA -->
+                <div class="min-w-full snap-center w-full flex-shrink-0 real-slide" data-title="STUDIO ZERO">
+                    <div class="w-full">
+            
+                        <div class="relative w-full h-[100vh] bg-black group overflow-hidden flagship-visual">
+                            <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 hidden md:block pointer-events-none"
+                                style="background-image: url('images/zero.jpg');">
+                            </div>
+                            <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 md:hidden pointer-events-none"
+                                style="background-image: url('images/zero_mobile.jpg');">
+                            </div>
+            
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 pointer-events-none">
+                            </div>
+            
+                            <div
+                                class="absolute w-full h-2 bg-bullish-green/30 top-[-100%] animate-scanline blur-sm pointer-events-none">
+                            </div>
+            
+                            <div class="absolute inset-x-0 bottom-[calc(3rem+var(--mobile-bottom-nav-height))] md:bottom-16 flex items-end justify-center">
+                                <div class="flex flex-col md:flex-row gap-4 pb-4 md:pb-6 lg:pb-8">
+                                    <a href="invest.html#studio-zero" class="btn-standard btn-primary px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(0,255,65,0.4)] hover:shadow-[0_0_25px_rgba(0,255,65,0.8)] hover:scale-105 transition-transform text-center">
+                                        ENTER LAUNCHPAD <i class="fa-solid fa-arrow-right ml-2"></i>
+                                    </a>
+                                    <button onclick="openFlagshipDetails(1)" class="btn-standard bg-desire-pink hover:opacity-90 text-black px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,0,255,0.4)] hover:shadow-[0_0_25px_rgba(255,0,255,0.8)] hover:scale-105 transition-transform text-center">
+                                        DETAILS
+                                    </button>
+                                    <a href="momo_whitepaper.html" class="btn-standard bg-gray-800 hover:bg-white hover:text-black text-white px-8 py-3 text-sm font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)] hover:scale-105 transition-all text-center">
+                                        READ $MOMO WHITEPAPER
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="relative hidden" id="flagship-details-src-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">NARRATIVE</span>
+                                        <i
+                                            class="fa-solid fa-share-nodes text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"Simp-to-God Power Fantasy"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: VIRAL ENGINE</div>
+                                        <div class="text-xl font-impact text-white mb-2">SIMP ECONOMY</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            Built-in emotional leverage. Naturally optimized for <span
+                                                class="text-white">TikTok/Twitter viral propagation</span>.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">VISUAL</span>
+                                        <i
+                                            class="fa-solid fa-eye text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"First-Person Cinematic Perspective"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: VISUAL SPEC</div>
+                                        <div class="text-xl font-impact text-white mb-2">SCARCE DATA ASSETS</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            First-person perspective interaction with a docile AI maid robot.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">LINE-UP</span>
+                                        <i
+                                            class="fa-solid fa-shield-halved text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"Highly Engaged, Deeply Loyal: The
+                                            Muses."</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: ORGANIC TRAFFIC</div>
+                                        <div class="text-xl font-impact text-white mb-2">Targeted Returns</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            Provides a solid foundation for copyright revenue <span class="text-white">from the
+                                                start</span>.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel-pink p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">MECHANIC</span>
+                                        <i
+                                            class="fa-solid fa-flask text-gray-700 group-hover:text-desire-pink transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"The Last Warmth in the AI Apocalypse"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-desire-pink"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-desire-pink font-mono mb-1">// VALUE: SOCIAL EXP</div>
+                                        <div class="text-xl font-impact text-white mb-2">PROVOKING DEEP THOUGHT</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            A high-stakes clash of desire & morality. Controversy is traffic. Gaming is stickiness.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div
+                                    class="cyber-panel-pink p-6 group hover:bg-gray-900 transition-colors md:col-span-2 lg:col-span-2">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">ECOSYSTEM</span>
+                                        <i
+                                            class="fa-solid fa-rocket text-gray-700 group-hover:text-desire-pink transition-colors"></i>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                        <div>
+                                            <div class="mb-4">
+                                                <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                                <div class="text-white font-bold font-terminal text-sm">"Muse Universe Protagonist"
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 mb-4 md:hidden">
+                                                <div class="h-px bg-gray-700 flex-grow"></div>
+                                                <i class="fa-solid fa-caret-down text-desire-pink"></i>
+                                                <div class="h-px bg-gray-700 flex-grow"></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs text-desire-pink font-mono mb-1">// VALUE: INFINITE LAUNCHPAD
+                                                </div>
+                                                <div class="text-xl font-impact text-white mb-2">"GOLDEN SHOVEL" UTILITY</div>
+                                                <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                                    Holding a Genesis Node = Locked-in airdrops and priority investment rights for
+                                                    the next <span class="text-white">10+ independent Muse IP projects</span>.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="border-l border-gray-800 pl-8 hidden md:block">
+                                            <div class="text-xs text-gray-500 font-mono mb-2">UPCOMING IP QUEUE:</div>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center gap-2 text-white font-terminal text-xs"><i
+                                                        class="fa-solid fa-check text-bullish-green"></i> YOGA MIAO [Signed & In
+                                                    Development]</div>
+                                                <div class="flex items-center gap-2 text-white font-terminal text-xs"><i
+                                                        class="fa-solid fa-check text-bullish-green"></i> SCRIPT DEVELOPMENT
+                                                    PROGRESS [90%]</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                            </div>
+                        </div>
+            
+            
+                        <div class="relative hidden" id="flagship-details-src-0">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">NARRATIVE</span>
+                                        <i
+                                            class="fa-solid fa-share-nodes text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"Freely Controllable AI Maid Robot"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: VIRAL ENGINE</div>
+                                        <div class="text-xl font-impact text-white mb-2">SIMP ECONOMY</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            Built-in emotional leverage. Naturally optimized for <span
+                                                class="text-white">TikTok/Twitter viral propagation</span>.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">VISUAL</span>
+                                        <i
+                                            class="fa-solid fa-eye text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"First-Person Cinematic Perspective"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: VISUAL SPEC</div>
+                                        <div class="text-xl font-impact text-white mb-2">SCARCE DATA ASSETS</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            First-person perspective interaction with a docile AI maid robot.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">LINE-UP</span>
+                                        <i
+                                            class="fa-solid fa-shield-halved text-gray-700 group-hover:text-bullish-green transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"Highly Engaged, Deeply Loyal: The
+                                            Muses."</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-bullish-green"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-bullish-green font-mono mb-1">// VALUE: ORGANIC TRAFFIC</div>
+                                        <div class="text-xl font-impact text-white mb-2">Targeted Returns</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            Provides a solid foundation for copyright revenue <span class="text-white">from the
+                                                start</span>.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div class="cyber-panel-pink p-6 group hover:bg-gray-900 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">MECHANIC</span>
+                                        <i
+                                            class="fa-solid fa-flask text-gray-700 group-hover:text-desire-pink transition-colors"></i>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                        <div class="text-white font-bold font-terminal text-sm">"The Last Warmth in the AI Apocalypse"</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                        <i class="fa-solid fa-caret-down text-desire-pink"></i>
+                                        <div class="h-px bg-gray-700 flex-grow"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-desire-pink font-mono mb-1">// VALUE: SOCIAL EXP</div>
+                                        <div class="text-xl font-impact text-white mb-2">PROVOKING DEEP THOUGHT</div>
+                                        <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                            A high-stakes clash of desire & morality. Controversy is traffic. Gaming is stickiness.
+                                        </p>
+                                    </div>
+                                </div>
+            
+                                <div
+                                    class="cyber-panel-pink p-6 group hover:bg-gray-900 transition-colors md:col-span-2 lg:col-span-2">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <span class="text-xs font-mono text-gray-500 border border-gray-700 px-1">ECOSYSTEM</span>
+                                        <i
+                                            class="fa-solid fa-rocket text-gray-700 group-hover:text-desire-pink transition-colors"></i>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                        <div>
+                                            <div class="mb-4">
+                                                <div class="text-xs text-gray-400 font-mono mb-1">// CONCEPT</div>
+                                                <div class="text-white font-bold font-terminal text-sm">"Muse Universe Protagonist"
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 mb-4 md:hidden">
+                                                <div class="h-px bg-gray-700 flex-grow"></div>
+                                                <i class="fa-solid fa-caret-down text-desire-pink"></i>
+                                                <div class="h-px bg-gray-700 flex-grow"></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs text-desire-pink font-mono mb-1">// VALUE: INFINITE LAUNCHPAD
+                                                </div>
+                                                <div class="text-xl font-impact text-white mb-2">"GOLDEN SHOVEL" UTILITY</div>
+                                                <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                                    Holding a Genesis Node = Locked-in airdrops and priority investment rights for
+                                                    the next <span class="text-white">10+ independent Muse IP projects</span>.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="border-l border-gray-800 pl-8 hidden md:block">
+                                            <div class="text-xs text-gray-500 font-mono mb-2">UPCOMING IP QUEUE:</div>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center gap-2 text-white font-terminal text-xs"><i
+                                                        class="fa-solid fa-check text-bullish-green"></i> CHUNMOMO0127 [Signed & In
+                                                    Development]</div>
+                                                <div class="flex items-center gap-2 text-white font-terminal text-xs"><i
+                                                        class="fa-solid fa-check text-bullish-green"></i> SCRIPT DEVELOPMENT
+                                                    PROGRESS [75%]</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                            </div>
+                        </div>
+
+                        <!-- Mobile Static Nav -->
+                        <div class="hidden">
+                            <button class="text-bullish-green text-sm font-terminal" onclick="prevSlide()"><< PREV ASSET</button>
+                            <span class="text-gray-500 text-xs">2 / 2</span>
+                            <button class="text-bullish-green text-sm font-terminal" onclick="nextSlide()">NEXT ASSET >></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clone of Slide 0 (REVOLUTION) for infinite loop (appended) -->
+                <div class="min-w-full snap-center w-full flex-shrink-0 clone-slide" data-title="REVOLUTION">
+                    <div class="w-full relative h-[100vh] flagship-visual overflow-hidden flex items-center justify-center bg-[#050508]">
+                        <!-- Background layers from vision -->
+                        <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen pointer-events-none"
+                            style="background-image: url('images/index.jpg'); filter: contrast(1.2) brightness(0.8);"></div>
+
+                        <div
+                            class="absolute inset-0 bg-[linear-gradient(rgba(0,255,65,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none">
+                        </div>
+
+                        <div class="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-bullish-green/20 rounded-full blur-[100px] animate-pulse mix-blend-screen pointer-events-none"
+                            style="animation-duration: 4s;"></div>
+                        <div class="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-desire-pink/20 rounded-full blur-[120px] animate-pulse mix-blend-screen pointer-events-none"
+                            style="animation-duration: 6s; animation-delay: 1s;"></div>
+
+                        <div class="absolute inset-0 pointer-events-none"
+                            style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; animation: float 10s linear infinite;">
+                        </div>
+
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none">
+                        </div>
+
+                        <!-- Content -->
+                        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full flex flex-col items-center justify-center h-full pt-16 md:pt-24">
+                            <div class="mb-4 md:mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">
+                                <div
+                                    class="inline-flex items-center gap-2 md:gap-3 border border-bullish-green/30 bg-black/60 px-4 md:px-6 py-1.5 md:py-2 rounded-full backdrop-blur-md shadow-[0_0_15px_rgba(0,255,65,0.2)]">
+                                    <span class="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-bullish-green animate-ping"></span>
+                                    <span class="text-white font-terminal text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.25em] uppercase font-bold text-shadow">The
+                                        Revolution of Entertainment</span>
+                                </div>
+                            </div>
+
+                            <h1 class="font-impact text-white mb-4 md:mb-8 tracking-tighter uppercase drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] animate-fade-in-up flex flex-col items-center justify-center w-full"
+                                style="animation-delay: 0.4s;">
+                                <span class="w-full text-center block text-[13.5vw] sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] md:leading-[0.85]">REVOLUTIONIZING</span>
+                                <span class="w-full text-center block text-[13.5vw] sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] md:leading-[0.85]">ENTERTAINMENT</span>
+                                
+                                <span
+                                    class="text-transparent bg-clip-text bg-gradient-to-br from-[#00FF41] via-white to-[#FF00FF] animate-gradient-x drop-shadow-sm mt-3 sm:mt-4 text-center block w-full text-[11.5vw] sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] md:leading-[0.9]">
+                                    <span class="block">A NEW ERA FOR <br class="sm:hidden">FILM & TV</span>
+                                    <span class="block">POWERED BY <br class="sm:hidden">REAL-WORLD</span>
+                                    <span class="block">ASSETS (RWA)</span>
+                                </span>
+                            </h1>
+
+                            <p class="max-w-4xl mx-auto text-sm sm:text-xl md:text-2xl text-gray-300 font-body font-light leading-relaxed animate-fade-in-up tracking-wide px-4"
+                                style="animation-delay: 0.6s;">
+                                "Join Plot18. <strong class="text-white font-bold">Become a stakeholder in a digital film studio.</strong>"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+            
+            <!-- Desktop Nav Buttons (Centered Wrapper) -->
+            <div class="absolute inset-0 pointer-events-none max-w-7xl mx-auto px-4 hidden md:flex items-center justify-between z-30">
+                <button id="prev-slide" class="pointer-events-auto bg-black/50 hover:bg-bullish-green/20 border border-bullish-green/30 text-bullish-green p-6 rounded-full backdrop-blur-sm transition-all -ml-20 hover:scale-110">
+                    <i class="fa-solid fa-chevron-left text-5xl"></i>
+                </button>
+                <button id="next-slide" class="pointer-events-auto bg-black/50 hover:bg-bullish-green/20 border border-bullish-green/30 text-bullish-green p-6 rounded-full backdrop-blur-sm transition-all -mr-20 hover:scale-110">
+                    <i class="fa-solid fa-chevron-right text-5xl"></i>
+                </button>
+            </div>
+            
+            <!-- Dots -->
+            <div class="absolute inset-x-0 bottom-[calc(1rem+var(--mobile-bottom-nav-height))] md:bottom-8 flex justify-center gap-3 z-30">
+                <button class="w-3 h-3 rounded-full bg-bullish-green transition-all slider-dot active" data-index="0"></button>
+                <button class="w-3 h-3 rounded-full bg-gray-600 hover:bg-gray-400 transition-all slider-dot" data-index="1"></button>
+                <button class="w-3 h-3 rounded-full bg-gray-600 hover:bg-gray-400 transition-all slider-dot" data-index="2"></button>
+            </div>
+        </div>
+        
+        <!-- Mobile Sticky HUD (Removed) -->
+        
+        <div id="flagshipDetails" class="fixed inset-0 z-[100000] hidden items-center justify-center p-4">
+            <div id="flagshipDetailsOverlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+            <div id="flagshipDetailsPanel" class="relative w-full max-w-5xl mx-auto bg-black border border-bullish-green/30 rounded-xl shadow-[0_0_30px_rgba(0,255,65,0.15)] overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+                    <div class="text-xs text-bullish-green font-terminal uppercase tracking-widest font-bold">ASSET DETAILS</div>
+                    <button id="flagshipDetailsClose" class="text-gray-400 hover:text-white px-2 py-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div id="flagshipDetailsBody" class="max-h-[80vh] overflow-y-auto p-6 bg-black"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="vision" class="relative py-12 flex items-center justify-center overflow-hidden"
+        data-nav-target="vision">
+        <div class="absolute inset-0 bg-[#050508] z-0">
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen"
+                style="background-image: url('images/index.jpg'); filter: contrast(1.2) brightness(0.8);"></div>
+
+            <div
+                class="absolute inset-0 bg-[linear-gradient(rgba(0,255,65,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none">
+            </div>
+
+            <div class="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-bullish-green/20 rounded-full blur-[100px] animate-pulse mix-blend-screen"
+                style="animation-duration: 4s;"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-desire-pink/20 rounded-full blur-[120px] animate-pulse mix-blend-screen"
+                style="animation-duration: 6s; animation-delay: 1s;"></div>
+
+            <div class="absolute inset-0"
+                style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; animation: float 10s linear infinite;">
+            </div>
+
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]">
+            </div>
+        </div>
+
+        <div
+            class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full flex flex-col items-center justify-center h-full">
+
+            <div class="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-12 items-center justify-center mb-12 animate-fade-in-up"
+                style="animation-delay: 0.8s;">
+
+                <div class="w-full md:w-1/2 text-left space-y-6">
+                    <p class="text-gray-300 font-body text-base md:text-lg leading-loose drop-shadow-md">
+                        Film and gaming are evolving beyond mere <span
+                            class="text-bullish-green font-bold font-terminal"> consumption into convertible assets.
+                        </span>Plot18 leverages blockchain to tokenize copyright revenue streams as on-chain assets. By
+                        holding RWA-based shares, global distribution royalties are captured and automated via smart
+                        contracts.
+                    </p>
+                    <p class="text-gray-300 font-body text-base md:text-lg leading-loose drop-shadow-md">
+                        Plot18 has secured <span class="text-bullish-green font-bold font-terminal">10 top-tier
+                            Muses</span>, representing a combined reach of over <span
+                            class="text-bullish-green font-bold font-terminal">5,000,000+</span> followers. This
+                        foundation provides immediate, tangible backing for the copyright revenue from the project's
+                        inception.
+                    </p>
+                </div>
+
+                <div class="w-full md:w-1/2 flex flex-col gap-4">
+                    <div
+                        class="flex items-center justify-between bg-black/40 border-l-4 border-bullish-green p-4 backdrop-blur-md hover:bg-bullish-green/10 transition-colors shadow-lg group cursor-default">
+                        <span
+                            class="text-gray-400 font-terminal text-sm uppercase tracking-widest group-hover:text-white transition-colors">Interactive
+                            Titles</span>
+                        <span
+                        <span
+                            class="text-3xl font-impact text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">10+</span>
+                    </div>
+                    <div
+                        class="flex items-center justify-between bg-black/40 border-l-4 border-white p-4 backdrop-blur-md hover:bg-white/10 transition-colors shadow-lg group cursor-default">
+                        <span
+                            class="text-gray-400 font-terminal text-sm uppercase tracking-widest group-hover:text-white transition-colors">Revenue
+                            Share Up to</span>
+                        <span
+                            class="text-3xl font-impact text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">100%</span>
+                    </div>
+                    <div
+                        class="flex items-center justify-between bg-black/40 border-l-4 border-desire-pink p-4 backdrop-blur-md hover:bg-desire-pink/10 transition-colors shadow-lg group cursor-default">
+                        <span
+                            class="text-gray-400 font-terminal text-sm uppercase tracking-widest group-hover:text-white transition-colors">Automated
+                            Distribution via Smart Contract</span>
+                        <span
+                            class="text-3xl font-impact text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">BSC</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-8 mb-16 animate-fade-in-up" style="animation-delay: 1.0s;">
+                <a href="https://x.com/plot18" target="_blank"
+                    class="text-gray-400 hover:text-[#1DA1F2] transition-all transform hover:scale-125 hover:-translate-y-1 duration-300">
+                    <i
+                        class="fa-brands fa-x-twitter text-3xl md:text-4xl drop-shadow-[0_0_15px_rgba(29,161,242,0.0)] hover:drop-shadow-[0_0_20px_rgba(29,161,242,0.8)]"></i>
+                </a>
+                <a href="https://t.me/plot18_com" target="_blank" title="Support & Service"
+                    class="text-[#00FF41] hover:text-white transition-all transform hover:scale-125 hover:-translate-y-1 duration-300">
+                    <i
+                        class="fa-brands fa-telegram text-3xl md:text-4xl drop-shadow-[0_0_15px_rgba(0,255,65,0.8)]"></i>
+                </a>
+                <a href="https://t.me/plot18app" target="_blank" title="Official Account"
+                    class="text-[#0088cc] hover:text-white transition-all transform hover:scale-125 hover:-translate-y-1 duration-300">
+                    <i
+                        class="fa-brands fa-telegram text-3xl md:text-4xl drop-shadow-[0_0_15px_rgba(0,136,204,0.8)]"></i>
+                </a>
+            </div>
+
+            <div class="animate-float cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
+                onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})">
+                <div class="text-[10px] text-bullish-green font-terminal mb-2 uppercase tracking-[0.2em] font-bold">
+                    INITIALIZING PROTOCOL</div>
+                <div class="w-px h-16 bg-gradient-to-b from-bullish-green to-transparent mx-auto relative">
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-4 bg-white animate-pulse">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-b from-transparent via-black/80 to-black z-10 pointer-events-none">
+        </div>
+    </section>
+
+    <section id="hero"
+        class="relative min-h-screen flex items-center justify-center overflow-hidden pt-10 pb-12 border-t border-gray-900"
+        data-nav-target="hero">
+        <canvas id="matrix-canvas"></canvas>
+
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/95 to-black z-10"></div>
+            <div class="absolute inset-0 opacity-5 bg-repeat"
+                style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMWgzdjM4SDF6IiBmaWxsPSIjMDBGRjQxIi8+PC9zdmc+'); background-size: 60px 60px;">
+            </div>
+
+            <div class="w-full h-full bg-cover bg-center opacity-30 grayscale contrast-125 mix-blend-overlay"
+                style="background-image: url('images/index.jpg');">
+            </div>
+        </div>
+
+        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
+            <div class="inline-block border border-bullish-green px-3 py-1 mb-6 animate-pulse">
+                <span class="text-bullish-green font-terminal text-[10px] tracking-widest">● SYSTEM ONLINE // READY TO
+                    MINT</span>
+            </div>
+
+            <div class="mb-4">
+                <h1 class="text-6xl md:text-8xl font-impact text-white tracking-tighter leading-none uppercase glitch-header decode-text drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                    data-value="INVEST IN CINEMA.">
+                    INVEST IN CINEMA.
+                </h1>
+            </div>
+            <h1
+                class="text-5xl md:text-7xl font-impact text-transparent bg-clip-text bg-gradient-to-r from-bullish-green to-desire-pink mb-10 tracking-tighter leading-none uppercase drop-shadow-lg">
+                OWN THE COPYRIGHT.
+            </h1>
+
+            <p class="max-w-2xl mx-auto text-lg md:text-xl text-gray-300 font-body mb-16 leading-relaxed font-light">
+                > The world's first <span
+                    class="text-bullish-green font-bold bg-bullish-green/10 px-1 rounded">Interactive Cinema RWA
+                    Ecosystem</span>.<br>
+                > Backed by Hollywood veterans & Top-tier Muses.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-start w-full max-w-4xl mx-auto">
+
+                <div class="w-full md:flex-1 flex flex-col items-center group">
+                    <button id="heroConnectBtn" onclick="openWalletModal()"
+                        class="btn-standard btn-primary w-full py-5 text-sm md:text-base">
+                        WEB 3.0
+                    </button>
+                    <div id="heroAirdropText"
+                        class="text-[10px] text-bullish-green font-terminal mt-3 opacity-80 group-hover:opacity-100 transition-opacity uppercase tracking-wider font-bold">
+                        [+ SECURE AIRDROP]</div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-col items-center justify-center group">
+                <a href="whitepaper.html"
+                    class="inline-block px-10 py-3 text-sm font-terminal font-bold uppercase tracking-widest text-gray-500 border border-gray-800 hover:border-gray-400 hover:text-white bg-transparent transition-all duration-300">
+                    READ WHITEPAPER
+                </a>
+                <div
+                    class="text-[10px] text-gray-600 group-hover:text-gray-400 font-terminal mt-2 transition-colors uppercase tracking-wider font-bold">
+                    [REVENUE MODELS]</div>
+            </div>
+
+            <div class="mt-16 flex justify-center hidden">
+                <button onclick="openVideoModal()"
+                    class="text-gray-300 hover:text-white transition-all text-xs font-terminal uppercase tracking-widest flex items-center gap-3 px-8 py-4 border border-desire-pink/30 hover:border-desire-pink bg-desire-pink/5 hover:bg-desire-pink/10 shadow-[0_0_20px_rgba(255,0,255,0.1)] hover:shadow-[0_0_30px_rgba(255,0,255,0.3)] group rounded-sm backdrop-blur-sm">
+                    <span
+                        class="w-2 h-2 bg-desire-pink rounded-full animate-pulse group-hover:scale-125 transition-transform"></span>
+                    <span class="font-bold">[ <i
+                            class="fa-solid fa-play text-desire-pink mx-2 group-hover:scale-110 transition-transform"></i>
+                        WATCH "SPRINGS 88" TEASER ]</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="tokenomics" class="py-24 bg-black relative border-t border-gray-900" data-nav-target="tokenomics">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-left mb-12 border-l-8 border-bullish-green pl-6">
+                <span class="text-bullish-green font-terminal text-xs uppercase mb-1 block">>>
+                    FINANCIAL_ARCHITECTURE.SYS</span>
+                <h2 class="text-4xl md:text-5xl font-impact text-white uppercase">LAUNCH SPECS & REVENUE</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
+                <div
+                    class="bg-dark-gray border border-gray-800 p-8 text-center hover:border-bullish-green transition-colors group">
+                    <div class="text-gray-500 font-terminal text-xs uppercase mb-4">Initial FDV</div>
+                    <div class="text-5xl text-white font-impact mb-2">$700,000</div>
+                    <div class="text-bullish-green font-terminal text-xs group-hover:text-white">LOW CAP GEM - 100X
+                        POTENTIAL</div>
+                </div>
+                <div
+                    class="bg-dark-gray border border-gray-800 p-8 text-center hover:border-bullish-green transition-colors group">
+                    <div class="text-gray-500 font-terminal text-xs uppercase mb-4">Total Supply</div>
+                    <div class="text-5xl text-white font-impact mb-2">100,000,000</div>
+                    <div class="text-bullish-green font-terminal text-xs group-hover:text-white">FIXED CAP</div>
+                </div>
+                <div
+                    class="bg-dark-gray border border-gray-800 p-8 text-center hover:border-desire-pink transition-colors group">
+                    <div class="text-gray-500 font-terminal text-xs uppercase mb-4">Initial Price</div>
+                    <div class="text-5xl text-desire-pink font-impact mb-2">$0.007</div>
+                    <div class="text-white font-terminal text-xs">/UNIT</div>
+                </div>
+            </div>
+
+            <div class="p-8 border border-gray-800 bg-dark-gray/50 relative">
+                <h3 class="text-2xl font-impact text-white mb-8 text-center uppercase">CORE REVENUE MODEL: THE YIELD
+                    FLYWHEEL</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
+                    <div class="relative group p-4 border border-gray-800 hover:border-bullish-green bg-black">
+                        <div class="text-4xl font-impact text-gray-700 group-hover:text-bullish-green mb-2">01</div>
+                        <h4 class="text-white font-bold font-terminal text-sm uppercase mb-2">Cash Flow Injection</h4>
+                        <p class="text-xs text-gray-500 font-mono">Game generates fiat revenue via sales on Steam and
+                            other platforms.</p>
+                    </div>
+
+                    <div class="relative group p-4 border border-gray-800 hover:border-bullish-green bg-black">
+                        <div class="text-4xl font-impact text-gray-700 group-hover:text-bullish-green mb-2">02</div>
+                        <h4 class="text-white font-bold font-terminal text-sm uppercase mb-2">Quarterly Dividends</h4>
+                        <p class="text-xs text-gray-500 font-mono">Revenue enters treasury. USDT dividends are settled
+                            quarterly.</p>
+                    </div>
+
+                    <div class="relative group p-4 border border-gray-800 hover:border-desire-pink bg-black">
+                        <div class="text-4xl font-impact text-gray-700 group-hover:text-desire-pink mb-2">03</div>
+                        <h4 class="text-white font-bold font-terminal text-sm uppercase mb-2">Holder = Shareholder</h4>
+                        <p class="text-xs text-gray-500 font-mono">Your $MM88 holdings determine your proportional share
+                            of the cash flow.</p>
+                    </div>
+
+                    <div class="relative group p-4 border border-gray-800 hover:border-desire-pink bg-black">
+                        <div class="text-4xl font-impact text-gray-700 group-hover:text-desire-pink mb-2">04</div>
+                        <h4 class="text-white font-bold font-terminal text-sm uppercase mb-2">Value Spiral</h4>
+                        <p class="text-xs text-gray-500 font-mono">Game Popularity Surges -> Dividends Increase ->
+                            Attracts More Investors.</p>
+                    </div>
+                </div>
+
+                <!-- Removed READ FULL TOKENOMICS (WHITEPAPER) link as per request -->
+            </div>
+        </div>
+    </section>
+
+
+
+    <section id="monitor" class="py-24 bg-black relative border-t border-gray-900" data-nav-target="monitor">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="cyber-panel p-8 mb-24 bg-dark-gray/50" style="z-index: 10; position: relative;">
+                <div
+                    class="absolute -top-3 left-4 bg-black px-2 text-bullish-green font-terminal text-xs border border-bullish-green">
+                    ECOSYSTEM_MONITOR
+                </div>
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-gray-800">
+                    <div class="py-4 md:py-0">
+                        <div class="text-5xl font-terminal text-white font-bold mb-2 tracking-tighter">
+                            <span class="counter" data-target="5000000">0</span>+
+                        </div>
+                        <div class="text-gray-500 text-xs font-terminal uppercase">Community Reach</div>
+                        <div class="flex justify-center gap-3 mt-4">
+                            <a href="https://x.com/MM88token" target="_blank"
+                                class="text-gray-500 hover:text-bullish-green transition-colors"><i
+                                    class="fa-brands fa-x-twitter text-lg"></i></a>
+                             <a href="https://t.me/plot18_com" target="_blank" title="Support & Service"
+                                class="w-8 h-8 rounded-full border border-bullish-green/30 flex items-center justify-center text-bullish-green hover:bg-bullish-green hover:text-black transition-all">
+                                <i
+                                    class="fa-brands fa-telegram text-lg"></i></a>
+                            <a href="https://t.me/plot18app" target="_blank" title="Official Account"
+                                class="w-8 h-8 rounded-full border border-[#0088cc]/30 flex items-center justify-center text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-all">
+                                <i
+                                    class="fa-brands fa-telegram text-lg"></i></a>
+                        </div>
+                    </div>
+                    <div class="py-4 md:py-0 flex flex-col items-center">
+                        <div class="text-5xl font-terminal text-bullish-green font-bold mb-2 tracking-tighter">
+                            $<span class="counter" data-target="350000">0</span>+
+                        </div>
+                        <div class="text-gray-500 text-xs font-terminal uppercase">Initial Liquidity</div>
+                        <!-- VIEW PROOF OF FUNDS REMOVED -->
+                    </div>
+                    <div class="py-4 md:py-0 flex flex-col items-center">
+                        <div class="text-5xl font-terminal text-desire-pink font-bold mb-2 tracking-tighter">
+                            <span class="counter" data-target="100">0</span>%
+                        </div>
+                        <div class="text-gray-500 text-xs font-terminal uppercase">Revenue Sharing Ratio</div>
+                        <!-- JOIN WHITELIST BUTTON REMOVED -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center mb-12">
+                <div class="h-px bg-gray-800 flex-grow"></div>
+                <h2 class="mx-6 text-3xl font-impact text-white uppercase tracking-wider text-center">
+                    PROVEN <span class="text-bullish-green">DNA</span>
+                </h2>
+                <div class="h-px bg-gray-800 flex-grow"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="https://store.steampowered.com/app/1222140/_/" target="_blank"
+                    class="group relative border border-gray-800 bg-dark-gray hover:border-bullish-green transition-all duration-300 block">
+                    <div
+                        class="absolute top-0 right-0 z-20 bg-bullish-green text-black font-bold font-terminal text-sm px-3 py-1 shadow-[0_0_15px_rgba(0,255,65,0.5)]">
+                        REVENUE: $276,000,000+
+                    </div>
+                    <div class="h-48 w-full overflow-hidden relative">
+                        <img src="images/detroit.jpg"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                        <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-colors"></div>
+                        <div
+                            class="absolute bottom-0 left-0 bg-black/80 border-t border-r border-bullish-green px-3 py-1">
+                            <span class="text-[10px] font-mono text-bullish-green uppercase">BENCHMARK: DETROIT: BECOME
+                                HUMAN</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-white font-bold font-terminal text-sm mb-2">SHARED DNA: Immersive Narrative</h3>
+                        <p class="text-xs text-gray-400 font-mono group-hover:text-white transition-colors">
+                            We inherited its branching storylines and high immersion core, but added Web3 asset
+                            ownership.
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://store.steampowered.com/app/2322560/_/" target="_blank"
+                    class="group relative border border-gray-800 bg-dark-gray hover:border-desire-pink transition-all duration-300 block">
+                    <div
+                        class="absolute top-0 right-0 z-20 bg-desire-pink text-black font-bold font-terminal text-sm px-3 py-1 shadow-[0_0_15px_rgba(255,0,255,0.5)]">
+                        REVENUE: $12,000,000+
+                    </div>
+                    <div class="h-48 w-full overflow-hidden relative">
+                        <img src="images/baowei.jpg"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                        <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-colors"></div>
+                        <div
+                            class="absolute bottom-0 left-0 bg-black/80 border-t border-r border-desire-pink px-3 py-1">
+                            <span class="text-[10px] font-mono text-desire-pink uppercase">BENCHMARK: LOVE IS ALL
+                                AROUND</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-white font-bold font-terminal text-sm mb-2">SHARED DNA: Viral Potential</h3>
+                        <p class="text-xs text-gray-400 font-mono group-hover:text-white transition-colors">
+                            We replicated its FMV & Short-video traffic codes, introducing the SPRINGS 88 Economy.
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://store.steampowered.com/app/3350200/_/" target="_blank"
+                    class="group relative border border-gray-800 bg-dark-gray hover:border-white transition-all duration-300 block">
+                    <div
+                        class="absolute top-0 right-0 z-20 bg-white text-black font-bold font-terminal text-sm px-3 py-1 shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                        REVENUE: $10,000,000+
+                    </div>
+                    <div class="h-48 w-full overflow-hidden relative">
+                        <img src="images/laonv.jpg"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                        <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-colors"></div>
+                        <div class="absolute bottom-0 left-0 bg-black/80 border-t border-r border-white px-3 py-1">
+                            <span class="text-[10px] font-mono text-white uppercase">BENCHMARK: REVENGE ON GOLD
+                                DIGGERS</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-white font-bold font-terminal text-sm mb-2">SHARED DNA: Catharsis Core</h3>
+                        <p class="text-xs text-gray-400 font-mono group-hover:text-white transition-colors">
+                            We utilize the same "Revenge/Underdog" psychological hooks, combined with RWA yields.
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="assets" class="py-24 bg-black relative border-t border-gray-900 overflow-hidden"
+        data-nav-target="assets">
+        <div class="max-w-full px-0 relative z-10">
+            <div class="text-center mb-16 px-4">
+                <h2 class="text-5xl md:text-7xl font-impact text-white uppercase mb-2">BLUE-CHIP <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-bullish-green to-desire-pink">MUSES</span>
+                </h2>
+                <p class="text-gray-500 font-terminal text-sm">> ACQUIRE SHARES IN TOP-TIER IP // SCROLL TO BROWSE</p>
+            </div>
+
+            <div class="absolute top-1/2 left-2 md:left-32 transform -translate-y-1/2 z-[60] hidden md:block">
+                <button onclick="rotateCarousel(-1)"
+                    class="text-white hover:text-bullish-green text-3xl md:text-6xl transition-colors opacity-80 hover:opacity-100 p-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="absolute top-1/2 right-2 md:right-32 transform -translate-y-1/2 z-[60] hidden md:block">
+                <button onclick="rotateCarousel(1)"
+                    class="text-white hover:text-desire-pink text-3xl md:text-6xl transition-colors opacity-80 hover:opacity-100 p-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="relative w-full h-[600px] flex items-center justify-center perspective-1000 touch-pan-y"
+                id="muse-carousel-stage">
+            </div>
+
+            <div class="flex justify-center gap-2 mt-8 z-50 relative" id="carousel-indicators">
+            </div>
+        </div>
+    </section>
+    <section id="team" class="py-24 bg-dark-gray border-t border-gray-900" data-nav-target="team">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-impact text-white uppercase mb-16">THE ARCHITECTS</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div
+                    class="p-8 border border-gray-800 bg-black hover:border-bullish-green transition-colors group relative overflow-hidden h-full">
+                    <div class="absolute top-0 left-0 w-full h-48 bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-500"
+                        style="background-image: url('images/movie.jpg');"></div>
+                    <div class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-transparent to-black"></div>
+                    <div class="relative z-10 pt-32">
+                        <h3 class="text-xl font-impact text-white mb-2">HOLLYWOOD VETERANS</h3>
+                        <div
+                            class="text-white font-terminal text-xs font-bold uppercase mb-4 border-b border-bullish-green/30 pb-2 inline-block">
+                            TRACK RECORD: $1 BILLION+ BOX OFFICE</div>
+                        <p class="text-sm text-gray-400 font-mono">
+                            Not traditional indie devs. A collective of veteran producers, directors, and screenwriters.
+                            Bringing <span class="text-white">mature film industrialization</span> to Web3.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="p-8 border border-gray-800 bg-black hover:border-desire-pink transition-colors group relative overflow-hidden h-full">
+                    <div class="absolute top-0 left-0 w-full h-48 bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-500"
+                        style="background-image: url('images/lens.jpg');"></div>
+                    <div class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-transparent to-black"></div>
+                    <div class="relative z-10 pt-32">
+                        <h3 class="text-xl font-impact text-white mb-2">CINEMATIC STANDARD</h3>
+                        <div
+                            class="text-white font-terminal text-xs font-bold uppercase mb-4 border-b border-desire-pink/30 pb-2 inline-block">
+                            TECH: 4K/60FPS IMMERSIVE PIPELINE</div>
+                        <p class="text-sm text-gray-400 font-mono">
+                            Proprietary film-grade shooting pipeline & professional casting matrix. Delivering visual
+                            precision and narrative rhythm that <span class="text-white">crush current market
+                                competitors</span>.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="p-8 border border-gray-800 bg-black hover:border-white transition-colors group relative overflow-hidden h-full">
+                    <div class="absolute top-0 left-0 w-full h-48 bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-500"
+                        style="background-image: url('images/earth.jpg');"></div>
+                    <div class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-transparent to-black"></div>
+                    <div class="relative z-10 pt-32">
+                        <h3 class="text-xl font-impact text-white mb-2">TRAFFIC MATRIX</h3>
+                        <div
+                            class="text-white font-terminal text-xs font-bold uppercase mb-4 border-b border-white/30 pb-2 inline-block">
+                            REACH: 5,000,000+ FAN COVERAGE</div>
+                        <p class="text-sm text-gray-400 font-mono">
+                            We don't buy ads; we own the traffic. Deep binding with <span class="text-white">10+
+                                Top-Tier Muses</span> ensures massive launch-day volume and sustained liquidity.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-gray-400 font-mono text-sm mb-8">
+                "We are upgrading the industry from 'Indie Games' to 'Digital Hollywood'."
+            </p>
+
+            <button
+                class="hidden text-gray-400 hover:text-white font-terminal text-xs uppercase border-b border-gray-600 hover:border-white pb-1 transition-all">
+                <a href="mailto:plot18app@outlook.com" target="_blank" class="block">CONTACT FOR PARTNERSHIP</a>
+            </button>
+        </div>
+    </section>
+
+    <section id="faq" class="py-24 bg-black border-t border-gray-900" data-nav-target="faq">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-impact text-white mb-12 text-center uppercase">FREQUENTLY ASKED QUESTIONS</h2>
+
+            <div class="space-y-4" id="faq-container">
+            </div>
+
+            <div class="text-center mt-12">
+                <button title="Support & Service"
+                    class="text-[#00FF41] hover:text-white flex items-center justify-center gap-2 mx-auto font-terminal text-xs uppercase tracking-widest transition-colors">
+                    <i class="fa-brands fa-telegram"></i> <a href="https://t.me/plot18_com" target="_blank"
+                        class="block">STILL HAVE QUESTIONS? ASK IN TELEGRAM</a>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black py-16 border-t border-gray-800">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-white text-2xl font-impact tracking-widest flex items-center gap-2">
+                <div class="w-3 h-3 bg-bullish-green animate-pulse"></div>
+                plot 18
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-8 text-xl">
+                <a href="https://x.com/plot18" target="_blank"
+                    class="text-gray-600 hover:text-[#1DA1F2] transition-colors"><i
+                        class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://t.me/plot18_com" target="_blank" title="Support & Service"
+                    class="text-[#00FF41] hover:text-white transition-colors"><i
+                        class="fa-brands fa-telegram"></i></a>
+                <a href="https://t.me/plot18app" target="_blank" title="Official Account"
+                    class="text-[#0088cc] hover:text-white transition-colors"><i
+                        class="fa-brands fa-telegram"></i></a>
+            </div>
+
+            <div class="flex gap-6 text-xs text-gray-600 font-terminal uppercase">
+                <a href="whitepaper.html" class="hover:text-white transition-colors">Whitepaper</a>
+                <span>&copy; 2025 plot 18. All Rights Reserved.</span>
+            </div>
+        </div>
+    </footer>
+
+    <div id="whitelistModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-dark-gray border border-bullish-green p-10 shadow-[0_0_50px_rgba(0,255,65,0.2)]">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-8">
+                <h3 class="text-3xl font-impact text-white mb-2" id="modalTitle">JOIN THE INNER CIRCLE</h3>
+            </div>
+
+            <form class="space-y-6"
+                onsubmit="event.preventDefault(); alert('Welcome to the list. Stay tuned.'); closeModal();">
+                <div>
+                    <label class="block text-xs font-terminal uppercase text-gray-500 mb-2">WALLET_ADDRESS</label>
+                    <input type="text"
+                        class="w-full bg-black border border-gray-700 text-white p-3 text-sm focus:border-bullish-green focus:outline-none transition-colors font-terminal"
+                        placeholder="0x...">
+                    <div
+                        class="text-red-500 text-[10px] font-mono border border-red-500/30 bg-red-900/10 p-2 mt-2 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                        <span>IMPORTANT: Do NOT use Exchange Addresses (CEX OR DEX). Use a decentralized wallet
+                            only.</span>
+                    </div>
+                </div>
+
+                <div>
+                </div>
+
+                <button type="submit"
+                    class="w-full btn-standard btn-primary py-4 font-bold text-sm hover:shadow-[0_0_20px_rgba(0,255,65,0.4)]">
+                    SUBMIT_DATA
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="videoModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity" onclick="closeVideoModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl bg-black border border-desire-pink shadow-[0_0_100px_rgba(255,0,255,0.3)]">
+            <button onclick="closeVideoModal()"
+                class="absolute -top-12 right-0 text-white hover:text-desire-pink text-xl font-terminal">
+                [ CLOSE_X ]
+            </button>
+            <div class="relative pt-[56.25%]">
+                <iframe id="videoFrame" class="absolute top-0 left-0 w-full h-full" src="" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Logic
+        function openModal(title) {
+            const modal = document.getElementById('whitelistModal');
+            if (title) document.getElementById('modalTitle').innerText = title.toUpperCase();
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('whitelistModal').classList.add('hidden');
+        }
+
+        // Faction Selection Logic
+        function selectFaction(faction) {
+            document.querySelectorAll('.faction-card').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`.faction-card.${faction}`).classList.add('selected');
+        }
+
+        // Video Modal Logic
+        function openVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const iframe = document.getElementById('videoFrame');
+            // Using a placeholder cyberpunk video or game trailer URL
+            iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"; // Replace with actual game trailer URL
+            modal.classList.remove('hidden');
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const iframe = document.getElementById('videoFrame');
+            iframe.src = ""; // Stop video
+            modal.classList.add('hidden');
+        }
+
+        // JS for Text Decoding Effect
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        document.querySelectorAll(".decode-text").forEach(header => {
+            header.onmouseover = event => {
+                let iteration = 0;
+
+                clearInterval(event.target.dataset.interval);
+
+                event.target.dataset.interval = setInterval(() => {
+                    event.target.innerText = event.target.innerText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iteration) {
+                                return event.target.dataset.value[index];
+                            }
+
+                            return letters[Math.floor(Math.random() * 26)]
+                        })
+                        .join("");
+
+                    if (iteration >= event.target.dataset.value.length) {
+                        clearInterval(event.target.dataset.interval);
+                    }
+
+                    iteration += 1 / 3;
+                }, 30);
+            }
+        });
+
+        // Matrix Rain
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+
+        const rainDrops = [];
+
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        };
+
+        setInterval(draw, 30);
+
+        // Mouse Spotlight
+        document.addEventListener('mousemove', e => {
+            const spotlight = document.getElementById('spotlight');
+            spotlight.style.setProperty('--x', e.clientX + 'px');
+            spotlight.style.setProperty('--y', e.clientY + 'px');
+        });
+
+        // FAQ Data - UPDATED
+        const faqData = [
+            {
+                q: "How are dividends distributed?",
+                a: "At 12:00 AM (UTC) on the last day of each quarter, an on-chain snapshot of all MM88 token holder addresses will be captured by the smart contract protocol and can be verified via the blockchain explorer (https://bscscan.com/). A pro-rata profit distribution will then be executed to all wallets holding ≥1,000 MM88 tokens (excluding addresses belonging to centralized or decentralized exchanges)."
+            },
+            {
+                q: "Where does the yield come from? Is it sustainable?",
+                a: "Yield is derived from global player fiat spending on Steam and other platforms, not from new investor capital. This is **Real Yield**, ensuring the sustainability of the dividend model."
+            },
+        ];
+
+        // Render FAQ
+        const faqContainer = document.getElementById('faq-container');
+        faqData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'border border-gray-800 bg-dark-gray';
+            div.innerHTML = `
+                <button class="w-full text-left p-4 flex justify-between items-center focus:outline-none group hover:bg-gray-900 transition-colors" onclick="toggleFaq(${index})">
+                    <span class="text-white font-bold font-terminal text-sm uppercase group-hover:text-bullish-green transition-colors">[Q${index + 1}] ${item.q}</span>
+                    <i class="fa-solid fa-caret-down text-gray-600 group-hover:text-bullish-green transition-colors" id="icon-${index}"></i>
+                </button>
+                <div class="hidden overflow-hidden transition-all duration-300 ease-in-out text-gray-400 text-sm font-mono p-4 pt-0 border-t border-gray-800" id="answer-${index}">
+                    <div class="pt-4 text-bullish-green mb-1">>> ANSWER:</div>
+                    ${item.a}
+                </div>
+            `;
+            faqContainer.appendChild(div);
+        });
+
+        function toggleFaq(index) {
+            const answer = document.getElementById(`answer-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+
+            if (answer.classList.contains('hidden')) {
+                answer.classList.remove('hidden');
+                icon.classList.remove('fa-caret-down');
+                icon.classList.add('fa-caret-up');
+            } else {
+                answer.classList.add('hidden');
+                icon.classList.remove('fa-caret-up');
+                icon.classList.add('fa-caret-down');
+            }
+        }
+
+        // Counter Animation Logic
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = entry.target.querySelectorAll('.counter');
+                    counters.forEach(counter => {
+                        const target = +counter.getAttribute('data-target');
+                        const duration = 1000; // Faster animation for high energy
+                        const increment = target / (duration / 16);
+
+                        let current = 0;
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.innerText = Math.ceil(current).toLocaleString();
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                counter.innerText = target.toLocaleString();
+                            }
+                        };
+                        updateCounter();
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        observer.observe(document.querySelector('#monitor'));
+
+        // ==========================================
+        // NEW MUSE CAROUSEL LOGIC
+        // ==========================================
+        const muses = [
+            {
+                name: "YOGA MIAO",
+                role: "Yogini",
+                status: "LIVE IN 'SPRINGS 88'",
+                stats: "205.8K+ Fans",
+                color: "desire-pink",
+                type: "GROWTH STOCK",
+                img: "images/miao.jpg",
+                twitter: "https://x.com/Yoga_miao_",
+                locked: true,
+                points: "0,30 20,25 40,10 60,35 80,15 100,40 120,20 140,5 160,30 180,10 200,45 220,15 240,5 260,25 280,10 300,35 320,0"
+            },
+            {
+                name: "CHUNMOMO0127",
+                role: "Doll",
+                status: "LIVE IN 'ZERO STUDIO'",
+                stats: "??? Fans",
+                color: "desire-pink",
+                type: "SPECULATIVE",
+                img: "images/chunmomo0127.jpg",
+                twitter: "https://x.com/CHUNMOMO0127",
+                locked: true,
+                points: "0,40 40,10 80,45 120,5 160,50 200,10 240,40 280,15 320,30"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">A ZHU</span>",
+                role: "Stunner",
+                status: "COMING SOON",
+                stats: "848.3K+ Fans",
+                color: "blue-500",
+                type: "BLUE CHIP",
+                img: "images/zhu.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,25 30,22 60,24 90,20 120,18 150,15 180,12 210,14 240,10 270,8 300,5 320,2"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">YUZIXIMEN</span>",
+                role: "Nymph",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "cyan-400",
+                type: "VALUE HOLD",
+                img: "images/yuziximen.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,30 50,30 100,28 150,28 200,25 250,25 300,22 320,20"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">SHENYUAN_ABYSS</span>",
+                role: "Vamp",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "yellow-400",
+                type: "EARLY GEM",
+                img: "images/shenyuan_abyss.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,50 40,45 80,48 120,35 160,40 200,25 240,30 280,10 320,5"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">MOMOY__Y</span>",
+                role: "Peach",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "red-500",
+                type: "INSTITUTIONAL",
+                img: "images/momoy__y.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,20 40,18 80,15 120,12 160,10 200,8 240,6 280,4 320,2"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">TAO LIANG AH ZHAI</span>",
+                role: "Chameleon",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "white",
+                type: "DARK HORSE",
+                img: "images/taoliangazhai.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,45 20,5 40,40 60,10 80,35 100,15 120,30 140,20 160,25 320,25"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">BINGTANGYUANZI</span>",
+                role: "Bonbon",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "green-400",
+                type: "STABLECOIN",
+                img: "images/bingtangyuanzi.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,25 50,25 100,25 150,25 200,25 250,25 300,25 320,25"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">UUULANDA</span>",
+                role: "Sultry",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "indigo-500",
+                type: "DEGEN PLAY",
+                img: "images/uuulanda.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,50 80,50 160,50 240,10 280,5 320,0"
+            },
+            {
+                name: "<span class=\"blur-sm select-none\">YAN_0304</span>",
+                role: "Vixen",
+                status: "COMING SOON",
+                stats: "??? Fans",
+                color: "orange-500",
+                type: "INFRASTRUCTURE",
+                img: "images/yan_0304.jpg",
+                twitter: "https://x.com/",
+                locked: true,
+                points: "0,40 40,35 80,30 120,25 160,20 200,15 240,10 280,5 320,0"
+            }
+        ];
+
+        let activeIndex = 0;
+        let isInitialized = false;
+
+        function initCarousel() {
+            const container = document.getElementById('muse-carousel-stage');
+            container.innerHTML = '';
+            const total = muses.length;
+
+            // Generate DOM elements once
+            for (let i = 0; i < total; i++) {
+                const muse = muses[i];
+                const card = document.createElement('div');
+                // Base classes - ADDED cursor-pointer
+                card.className = `muse-card bg-dark-gray border border-gray-800 absolute transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] cursor-pointer group`;
+                card.id = `muse-card-${i}`;
+
+                // Add click event for the entire card
+                card.onclick = (e) => {
+                    // Prevent navigation if clicking inside a button/link that handles its own logic, 
+                    // though for this request we want the card to link to Twitter.
+                    // We'll just open the link.
+                    window.open(muse.twitter, '_blank');
+                };
+
+                // Border Color Logic Pre-calc
+                let borderColor = '#333';
+                if (muse.color === 'desire-pink') borderColor = '#FF00FF';
+                else if (muse.color === 'bullish-green') borderColor = '#00FF41';
+                else if (muse.color === 'blue-500') borderColor = '#3B82F6';
+                else borderColor = '#fff';
+
+                // Button Styling Logic
+                let buttonHTML = '';
+                if (muse.locked) {
+                    buttonHTML = `
+                    <button class="w-full py-2 bg-gray-900 text-gray-500 border border-gray-800 font-terminal text-xs uppercase font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock"></i> LOCKED
+                    </button>`;
+                } else {
+                    buttonHTML = `
+                    <div class="flex gap-2">
+                        <button onclick="event.stopPropagation(); openVideoModal()" class="flex-grow py-2 bg-${muse.color === 'desire-pink' ? 'desire-pink' : 'gray-800'} text-${muse.color === 'desire-pink' ? 'black' : 'white'} border border-${muse.color === 'desire-pink' ? 'desire-pink' : 'gray-600'} hover:bg-white hover:text-black font-terminal text-xs uppercase font-bold transition-all shadow-[0_0_10px_rgba(${muse.color === 'desire-pink' ? '255,0,255' : '0,255,65'},0.3)]">
+                            VIEW ASSETS
+                        </button>
+                        <div class="w-10 flex items-center justify-center border border-gray-600 hover:border-[#1DA1F2] hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10 transition-colors">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </div>
+                    </div>`;
+                }
+
+                // Content Construction
+                let cardContent = `
+                    <div class="h-64 w-full bg-gray-900 relative overflow-hidden">
+                        <img src="${muse.img}" alt="${muse.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-gray to-transparent"></div>
+                        
+                        <div class="active-element absolute bottom-4 left-4 transition-opacity duration-300">
+                            <div class="bg-black/80 border border-${muse.color === 'bullish-green' ? 'bullish-green' : (muse.color === 'desire-pink' ? 'desire-pink' : 'white')} text-${muse.color === 'bullish-green' ? 'bullish-green' : (muse.color === 'desire-pink' ? 'desire-pink' : 'white')} px-3 py-1 font-terminal text-xs animate-pulse">
+                                ● ${muse.status}
+                            </div>
+                        </div>
+
+                        <div class="inactive-element absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-300">
+                            <i class="fa-solid fa-lock text-4xl text-gray-500"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 relative">
+                        <div class="absolute top-0 right-0 transform -translate-y-1/2 bg-black border border-gray-700 px-2 py-1 text-[10px] font-mono text-gray-400 hidden">
+                            ${muse.type}
+                        </div>
+                        <h3 class="text-2xl font-impact text-white tracking-wide mb-1 group-hover:text-${muse.color === 'desire-pink' ? 'desire-pink' : (muse.color === 'bullish-green' ? 'bullish-green' : 'white')} transition-colors">${muse.name}</h3>
+                        <div class="text-xs text-gray-400 font-mono mb-4">${muse.role}</div>
+                        
+                        <div class="active-element transition-opacity duration-300">
+                            <div class="border-t border-gray-800 pt-4 mb-4">
+                                <div class="flex justify-between text-[10px] text-gray-500 font-mono mb-1">
+                                    <span>MARKET DATA</span>
+                                    <span class="text-${muse.color === 'bullish-green' ? 'bullish-green' : (muse.color === 'desire-pink' ? 'desire-pink' : 'white')}">${muse.stats}</span>
+                                </div>
+                                <div class="h-8 w-full bg-gray-900/50 relative overflow-hidden">
+                                    <svg class="w-full h-full" preserveAspectRatio="none">
+                                        <polyline points="${muse.points}" 
+                                            fill="none" 
+                                            stroke="${borderColor}" 
+                                            stroke-width="2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            ${buttonHTML}
+                        </div>
+
+                        <div class="inactive-element mt-4 text-center transition-opacity duration-300">
+                            <span class="text-xs font-mono text-gray-600 border border-gray-800 px-3 py-1">LOCKED ASSET</span>
+                        </div>
+                    </div>
+                `;
+
+                card.innerHTML = cardContent;
+                container.appendChild(card);
+            }
+
+            // Initialize Dots
+            const indicators = document.getElementById('carousel-indicators');
+            indicators.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = `carousel-dot mx-1 ${i === 0 ? 'active' : ''}`; // Initially first dot active if logic aligned
+                dot.onclick = () => {
+                    // Logic to jump to specific dot could be implemented here
+                };
+                indicators.appendChild(dot);
+            }
+
+            updateCarousel();
+            isInitialized = true;
+
+            // Add Swipe Listeners
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            container.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            container.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50) {
+                    rotateCarousel(1); // Swipe Left -> Next
+                }
+                if (touchEndX > touchStartX + 50) {
+                    rotateCarousel(-1); // Swipe Right -> Prev
+                }
+            }
+        }
+
+        function updateCarousel() {
+            const total = muses.length;
+            const cardWidth = 340;
+            const gap = 20;
+            const isMobile = window.innerWidth < 768; // Mobile Check
+
+            // Update Dots
+            const dots = document.querySelectorAll('.carousel-dot');
+            dots.forEach((dot, idx) => {
+                // Determine which dot should be active.
+                if (idx === activeIndex) {
+                    dot.classList.add('active');
+                    dot.style.backgroundColor = '#00FF41';
+                } else {
+                    dot.classList.remove('active');
+                    dot.style.backgroundColor = '#333';
+                }
+            });
+
+            for (let i = 0; i < total; i++) {
+                const card = document.getElementById(`muse-card-${i}`);
+
+                // Relative position logic
+                let rel = (i - activeIndex + total) % total;
+                if (rel > total / 2) rel -= total;
+
+                // Determine styling based on rel position
+                let xOffset = 0;
+                let scale = 0.8;
+                let opacity = 0.3;
+                let zIndex = 10;
+                let filter = 'grayscale(100%) brightness(0.5)';
+                let pointerEvents = 'none';
+                let isActive = false;
+
+                if (isMobile) {
+                    // --- Mobile Logic (Single Focus) ---
+                    if (rel === 0) {
+                        // Center Active
+                        xOffset = 0;
+                        scale = 1;
+                        opacity = 1;
+                        zIndex = 50;
+                        filter = 'grayscale(0%) brightness(1)';
+                        pointerEvents = 'auto';
+                        isActive = true;
+                    } else if (rel === -1) {
+                        // Left Hidden
+                        xOffset = -300; // Push off screen
+                        scale = 0.8;
+                        opacity = 0;
+                    } else if (rel === 1) {
+                        // Right Hidden
+                        xOffset = 300; // Push off screen
+                        scale = 0.8;
+                        opacity = 0;
+                    } else {
+                        // Others
+                        xOffset = rel * 100; // Hidden stack
+                        opacity = 0;
+                    }
+                } else {
+                    // --- Desktop Logic (Dual Focus) ---
+                    // Desktop Rel adjustment for dual center
+                    let desktopRel = (i - activeIndex + total) % total;
+                    if (desktopRel > 5) desktopRel -= total;
+
+                    if (desktopRel === 0) {
+                        // Active Left
+                        xOffset = - (cardWidth / 2) - (gap / 2);
+                        scale = 1.05; // Slightly reduced scale for elegance
+                        opacity = 1;
+                        zIndex = 50;
+                        filter = 'grayscale(0%) brightness(1)';
+                        pointerEvents = 'auto';
+                        isActive = true;
+                    } else if (desktopRel === 1) {
+                        // Active Right
+                        xOffset = (cardWidth / 2) + (gap / 2);
+                        scale = 1.05;
+                        opacity = 1;
+                        zIndex = 50;
+                        filter = 'grayscale(0%) brightness(1)';
+                        pointerEvents = 'auto';
+                        isActive = true;
+                    } else if (desktopRel < 0) {
+                        // Left Side
+                        const dist = Math.abs(desktopRel);
+                        xOffset = - (cardWidth / 2) - (gap / 2) - (dist * 220);
+                        scale = 1 - (dist * 0.12);
+                        opacity = Math.max(0, 0.6 - (dist * 0.15));
+                        zIndex = 40 - dist;
+                    } else if (desktopRel > 1) {
+                        // Right Side
+                        const dist = desktopRel - 1;
+                        xOffset = (cardWidth / 2) + (gap / 2) + (dist * 220);
+                        scale = 1 - (dist * 0.12);
+                        opacity = Math.max(0, 0.6 - (dist * 0.15));
+                        zIndex = 40 - dist;
+                    }
+                }
+
+                // Apply styles
+                card.style.left = `calc(50% + ${xOffset}px)`;
+                card.style.transform = `translateY(-50%) translateX(-50%) scale(${scale})`;
+                card.style.opacity = opacity;
+                card.style.zIndex = zIndex;
+                card.style.filter = filter;
+                card.style.pointerEvents = pointerEvents;
+
+                // Toggle Active/Inactive Content Visibility
+                const activeEls = card.querySelectorAll('.active-element');
+                const inactiveEls = card.querySelectorAll('.inactive-element');
+
+                activeEls.forEach(el => el.style.opacity = isActive ? '1' : '0');
+                activeEls.forEach(el => el.style.pointerEvents = isActive ? 'auto' : 'none');
+
+                inactiveEls.forEach(el => el.style.opacity = isActive ? '0' : '1');
+            }
+        }
+
+        function rotateCarousel(direction) {
+            const total = muses.length;
+            activeIndex = (activeIndex + direction) % total;
+            if (activeIndex < 0) activeIndex += total;
+            updateCarousel();
+        }
+
+        // Handle Resize to switch modes
+        window.addEventListener('resize', () => {
+            if (isInitialized) updateCarousel();
+        });
+
+        // Initialize Carousel on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initCarousel();
+            startAutoSlide(); // Start auto-play
+            // ... (rest of init code)
+        });
+
+        // Flagship Details Modal Logic
+        function openFlagshipDetails(id) {
+            const modal = document.getElementById('flagshipDetails');
+            const body = document.getElementById('flagshipDetailsBody');
+            const src = document.getElementById(`flagship-details-src-${id}`);
+            
+            if (src) {
+                body.innerHTML = src.innerHTML;
+            } else {
+                body.innerHTML = '<div class="text-gray-500 font-terminal text-center">DETAILS NOT FOUND</div>';
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Trigger animation
+            setTimeout(() => {
+                const panel = document.getElementById('flagshipDetailsPanel');
+                panel.classList.remove('scale-95', 'opacity-0');
+                panel.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        document.getElementById('flagshipDetailsClose').addEventListener('click', () => {
+            const panel = document.getElementById('flagshipDetailsPanel');
+            panel.classList.remove('scale-100', 'opacity-100');
+            panel.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                const modal = document.getElementById('flagshipDetails');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        });
+
+        document.getElementById('flagshipDetailsOverlay').addEventListener('click', () => {
+            document.getElementById('flagshipDetailsClose').click();
+        });
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        // Scroll Spy for Nav Highlighting
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link, .side-nav-item');
+
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            // Special check for top of page
+            if (pageYOffset < 100) {
+                current = 'flagship';
+            }
+
+            navLinks.forEach(link => {
+                // If it's a side-nav-item, we don't necessarily want to remove the 'active' class
+                // if it uses a different active styling. But assuming they share the same 'active'
+                // class logic for color highlighting. Let's toggle a specific class for side nav.
+                if (link.classList.contains('side-nav-item')) {
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('text-bullish-green');
+                        link.classList.remove('text-gray-400');
+                    } else {
+                        link.classList.remove('text-bullish-green');
+                        // Don't override special colored icons like telegram
+                        if (!link.classList.contains('!text-[#0088cc]') && !link.classList.contains('!text-bullish-green')) {
+                             // Only reset standard icons
+                        }
+                    }
+                } else {
+                    // Standard top nav link
+                    link.classList.remove('active');
+                    if (link.dataset.target === current) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+        });
+
+
+    </script>
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletSelectModal" class="fixed inset-0 z-[100000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeWalletModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-bullish-green/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(0,255,65,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletModalContent">
+            <!-- Close Button -->
+            <button onclick="closeWalletModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-impact tracking-widest text-white mb-2 text-center">CONNECT <span class="text-bullish-green">WALLET</span></h3>
+            <p class="text-xs text-gray-400 font-terminal text-center mb-6">SELECT YOUR PROVIDER TO INITIATE UPLINK</p>
+
+            <div class="space-y-3">
+                <!-- MetaMask -->
+                <button onclick="handleWalletSelection('metamask')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-orange-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/metamask.png" alt="MetaMask" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">MetaMask</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-orange-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- OKX Wallet -->
+                <button onclick="handleWalletSelection('okx')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-white/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/okx.png" alt="OKX" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">OKX Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-white text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- TokenPocket -->
+                <button onclick="handleWalletSelection('tokenpocket')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/tokenpocket.png" alt="TokenPocket" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">TokenPocket</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Coinbase Wallet -->
+                <button onclick="handleWalletSelection('coinbase')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-500/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/coinbase.png" alt="Coinbase" class="w-8 h-8 object-contain rounded-full">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Coinbase Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-500 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- Trust Wallet -->
+                <button onclick="handleWalletSelection('trustwallet')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-blue-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/trustwallet.png" alt="Trust Wallet" class="w-8 h-8 object-contain">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">Trust Wallet</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-blue-400 text-sm"></i>
+                    </div>
+                </button>
+
+                <!-- SafePal -->
+                <button onclick="handleWalletSelection('safepal')" class="w-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-black border border-gray-800 group-hover:border-gray-400/50 p-4 flex items-center justify-between transition-all group-hover:translate-x-1">
+                        <div class="flex items-center gap-4">
+                            <img src="images/wallets/safepal.png" alt="SafePal" class="w-8 h-8 object-contain rounded-sm">
+                            <span class="font-terminal font-bold text-gray-200 group-hover:text-white">SafePal</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-gray-400 text-sm"></i>
+                    </div>
+                </button>
+                <div class="text-center mt-4 pt-2 border-t border-gray-800">
+                   <span class="text-[10px] text-gray-600 font-terminal block">// SECURE PROTOCOL V1.0 //</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Not Installed / Download Fallback Modal -->
+    <div id="walletDownloadModal" class="fixed inset-0 z-[10000] hidden flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="closeDownloadModal()"></div>
+        
+        <div class="relative bg-dark-gray border border-desire-pink/50 p-6 sm:p-8 max-w-sm w-[90%] mx-auto cyber-panel z-10 pointer-events-auto shadow-[0_0_30px_rgba(255,0,255,0.2)] transform transition-transform scale-95 opacity-0 duration-300" id="walletDownloadContent">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-desire-pink mb-4"></i>
+                <h3 class="text-2xl font-impact tracking-widest text-white mb-2">APP NOT <span class="text-desire-pink">FOUND</span></h3>
+                <p id="downloadModalText" class="text-sm text-gray-400 font-terminal">It looks like you don't have this Wallet App installed on your device.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a id="downloadModalBtn" href="#" target="_blank" class="w-full text-center bg-bullish-green text-black font-terminal font-bold text-sm py-3 transition-colors hover:bg-white clip-button">
+                    DOWNLOAD APP
+                </a>
+                <button onclick="closeDownloadModal(); openWalletModal();" class="w-full bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 font-terminal font-bold text-sm py-3 transition-colors">
+                    CHOOSE ANOTHER WALLET
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
