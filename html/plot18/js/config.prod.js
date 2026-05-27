@@ -20,6 +20,6 @@
         platformTokenDecimals: 18,
 
         // Backend KOL Tracker URL
-        kolApiUrl: "https://www.plot18.com/analysis/bsc/kolBuy/public"
+        kolApiUrl: "https://www.plot18.com/stage-api/analysis/bsc/kolBuy/public"
     };
 })();
